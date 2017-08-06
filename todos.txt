@@ -1,0 +1,2 @@
+fix resize code in Game
+replace hard coded config values

@@ -110,6 +110,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="util\gametimer.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="util\clientwindow.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
+    <ClCompile Include="game.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="util\gametimer.h" />
+    <ClInclude Include="util\clientwindow.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
+    <ClInclude Include="game.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
