@@ -103,7 +103,7 @@ LRESULT Game::MsgProc(HWND handle, UINT msg, WPARAM wParam, LPARAM lParam)
 				_clientWindow->UpdateOnResize(newWidth, newHeight);
 			}
 
-			if (true) //md3dDevice)
+			if (_renderingContext)
 			{
 				if (wParam == SIZE_MINIMIZED)
 				{
@@ -219,10 +219,7 @@ LRESULT Game::MsgProc(HWND handle, UINT msg, WPARAM wParam, LPARAM lParam)
 
 void Game::OnResize()
 {	
-	if (_renderingContext)
-	{
-		_renderingContext->OnResize();
-	}
+	_renderingContext->OnResize();
 }
 
 void Game::OnMouseDown(WPARAM btnState, int x, int y)

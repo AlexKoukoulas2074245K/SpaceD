@@ -6,8 +6,8 @@
 #pragma once
 
 // Remote Headers
-#include <string>
 #include <Windows.h>
+#include <string>
 
 // Local Headers
 
