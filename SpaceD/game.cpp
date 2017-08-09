@@ -8,6 +8,7 @@
 
 // Local Headers
 #include "game.h"
+#include "rendering\renderingcontext.h"
 #include "util\clientwindow.h"
 #include "util\gametimer.h"
 
@@ -29,10 +30,11 @@ Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, 
 	, _maximized(false)
 	, _resizing(false)
 {	
-	// Delayed window creation to allow assignment to global Game pointer (Window procs can not 
+	// Delayed window and rendering context creation to allow assignment to global Game pointer (Window procs can not 
 	// be members of a class)
 	game = this;
 	_clientWindow = std::make_unique<ClientWindow>(hInstance, WndProc, clientName, clientWidth, clientHeight);
+	_renderingContext = std::make_unique<RenderingContext>(*_clientWindow);
 }
 
 Game::~Game(){}
@@ -54,9 +56,17 @@ void Game::Run()
 		else
 		{
 			_gameTimer->Tick();
-			CalculateFrameStats();
-			//updateStateManager();
-			//renderStateManager();
+
+			if (!_paused)
+			{
+				CalculateFrameStats();
+				Update();
+				Render();
+			}
+			else
+			{
+				Sleep(100);
+			}
 		}
 	}
 }
@@ -85,15 +95,15 @@ LRESULT Game::MsgProc(HWND handle, UINT msg, WPARAM wParam, LPARAM lParam)
 		case WM_SIZE:
 		{
 			// Save the new client area dimensions.
-			int newWidth = LOWORD(lParam);
-			int newHeight = HIWORD(lParam);
+			auto newWidth = LOWORD(lParam);
+			auto newHeight = HIWORD(lParam);
             
 			if (_clientWindow)
 			{
 				_clientWindow->UpdateOnResize(newWidth, newHeight);
 			}
 
-			if (true)//md3dDevice)
+			if (true) //md3dDevice)
 			{
 				if (wParam == SIZE_MINIMIZED)
 				{
@@ -208,77 +218,11 @@ LRESULT Game::MsgProc(HWND handle, UINT msg, WPARAM wParam, LPARAM lParam)
 }
 
 void Game::OnResize()
-{
-	OutputDebugString("Resize\n");
-	/*
-	assert(md3dImmediateContext);
-	assert(md3dDevice);
-	assert(mSwapChain);
-
-	// Release the old views, as they hold references to the buffers we
-	// will be destroying.  Also release the old depth/stencil buffer.
-
-	ReleaseCOM(mRenderTargetView);
-	ReleaseCOM(mDepthStencilView);
-	ReleaseCOM(mDepthStencilBuffer);
-
-
-	// Resize the swap chain and recreate the render target view.
-
-	HR(mSwapChain->ResizeBuffers(1, mClientWidth, mClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
-	ID3D11Texture2D* backBuffer;
-	HR(mSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer)));
-	HR(md3dDevice->CreateRenderTargetView(backBuffer, 0, &mRenderTargetView));
-	ReleaseCOM(backBuffer);
-
-	// Create the depth/stencil buffer and view.
-
-	D3D11_TEXTURE2D_DESC depthStencilDesc;
-
-	depthStencilDesc.Width = mClientWidth;
-	depthStencilDesc.Height = mClientHeight;
-	depthStencilDesc.MipLevels = 1;
-	depthStencilDesc.ArraySize = 1;
-	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-
-	// Use 4X MSAA? --must match swap chain MSAA values.
-	if (mEnable4xMsaa)
+{	
+	if (_renderingContext)
 	{
-		depthStencilDesc.SampleDesc.Count = 4;
-		depthStencilDesc.SampleDesc.Quality = m4xMsaaQuality - 1;
+		_renderingContext->OnResize();
 	}
-	// No MSAA
-	else
-	{
-		depthStencilDesc.SampleDesc.Count = 1;
-		depthStencilDesc.SampleDesc.Quality = 0;
-	}
-
-	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
-	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	depthStencilDesc.CPUAccessFlags = 0;
-	depthStencilDesc.MiscFlags = 0;
-
-	HR(md3dDevice->CreateTexture2D(&depthStencilDesc, 0, &mDepthStencilBuffer));
-	HR(md3dDevice->CreateDepthStencilView(mDepthStencilBuffer, 0, &mDepthStencilView));
-
-
-	// Bind the render target view and depth/stencil view to the pipeline.
-
-	md3dImmediateContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
-
-
-	// Set the viewport transform.
-
-	mScreenViewport.TopLeftX = 0;
-	mScreenViewport.TopLeftY = 0;
-	mScreenViewport.Width = static_cast<float>(mClientWidth);
-	mScreenViewport.Height = static_cast<float>(mClientHeight);
-	mScreenViewport.MinDepth = 0.0f;
-	mScreenViewport.MaxDepth = 1.0f;
-
-	md3dImmediateContext->RSSetViewports(1, &mScreenViewport);
-	*/
 }
 
 void Game::OnMouseDown(WPARAM btnState, int x, int y)
@@ -299,20 +243,22 @@ void Game::Update()
 
 void Game::Render()
 {
+	_renderingContext->ClearViews();
+	_renderingContext->Present();
 }
 
 void Game::CalculateFrameStats()
 {
-	static int frameCnt = 0;
-	static float timeElapsed = 0.0f;
+	static auto frameCnt = 0;
+	static auto timeElapsed = 0.0f;
 
 	frameCnt++;
 
 	// Compute averages over one second period.
 	if ((_gameTimer->TotalTime() - timeElapsed) >= 1.0f)
 	{
-		float fps = (float)frameCnt; // fps = frameCnt / 1
-		float mspf = 1000.0f / fps;
+		auto fps = (float)frameCnt; // fps = frameCnt / 1
+		auto mspf = 1000.0f / fps;
 
 		std::ostringstream outs;
 		outs.precision(6);

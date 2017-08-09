@@ -29,7 +29,7 @@ ClientWindow::ClientWindow(HINSTANCE instance, WNDPROC wndProc, const std::strin
 
 	if (!RegisterClass(&wc))
 	{
-		MessageBox(0, "Window class registration failed", "Failure", 0);
+		MessageBox(0, "Window class registration failed", 0, MB_ICONERROR);
 		PostQuitMessage(-1);
 	}
 

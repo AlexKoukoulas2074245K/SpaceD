@@ -15,6 +15,7 @@
 // Forward Declarations
 class ClientWindow;
 class GameTimer;
+class RenderingContext;
 
 class Game final
 {
@@ -39,6 +40,7 @@ private:
 private:
     std::unique_ptr<ClientWindow> _clientWindow;
 	std::unique_ptr<GameTimer> _gameTimer;
+	std::unique_ptr<RenderingContext> _renderingContext;
 
 	bool _paused;
 	bool _minimized;

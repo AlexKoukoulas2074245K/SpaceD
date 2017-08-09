@@ -14,9 +14,9 @@
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, int showCmd)
 {
 	//TODO change to config values
-	int clientWidth   = 400;
-	int clientHeight  = 600;
-	LPCSTR clientName = "Space-D";
+	auto clientWidth   = 400;
+	auto clientHeight  = 600;
+	auto clientName = "Space-D";
 	
 	Game game(hInstance, clientName, clientWidth, clientHeight);
 	game.Run();
