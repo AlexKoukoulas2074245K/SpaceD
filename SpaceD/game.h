@@ -5,17 +5,19 @@
 
 #pragma once
 
+// Local Headers
+
 // Remote Headers
 #include <memory>
 #include <Windows.h>
 #include <Windowsx.h>
 
-// Local Headers
-
 // Forward Declarations
 class ClientWindow;
 class GameTimer;
 class RenderingContext;
+class OBJLoader;
+class Model;
 
 class Game final
 {
@@ -33,7 +35,7 @@ private:
 	void OnMouseUp(WPARAM btnState, int x, int y);
 	void OnMouseMove(WPARAM btnState, int x, int y);
 
-	void Update();
+	void Update(const float deltaTime);
 	void Render();
 	void CalculateFrameStats();
 
@@ -41,6 +43,8 @@ private:
     std::unique_ptr<ClientWindow> _clientWindow;
 	std::unique_ptr<GameTimer> _gameTimer;
 	std::unique_ptr<RenderingContext> _renderingContext;
+	std::unique_ptr<OBJLoader> _objLoader;
+	std::shared_ptr<Model> _shipModel;
 
 	bool _paused;
 	bool _minimized;

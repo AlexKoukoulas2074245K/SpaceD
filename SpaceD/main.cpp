@@ -3,13 +3,13 @@
 /** File Description:                                              **/
 /********************************************************************/
 
+// Local Headers
+#include "game.h"
+
 // Remote Headers
 #include <vld.h>
 #include <Windows.h>
 #include <Windowsx.h>
-
-// Local Headers
-#include "game.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, int showCmd)
 {

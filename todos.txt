@@ -1,2 +1,4 @@
 fix resize code in Game
 replace hard coded config values
+move rendering code to renderer
+enable attaching shader to model

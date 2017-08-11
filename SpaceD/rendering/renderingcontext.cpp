@@ -3,43 +3,22 @@
 /** File Description:                                                   **/
 /*************************************************************************/
 
-// Remote Headers
-#include <cassert>
-#include <dxgi.h>
-#include <dxerr.h>
-#include <sstream>
-#include <stdio.h>
-#include <vector>
-
 // Local Headers
 #include "renderingcontext.h"
+#include "model.h"
+#include "shaders/default3dshader.h"
+#include "../util/math.h"
 #include "../util/clientwindow.h"
 
-// Linking to external libs
-#pragma comment(lib, "d3d11.lib")
+// Remote Headers
+#include <cassert>
+#include <sstream>
+#include <vector>
+#include <dxgi.h>
+#include <d3dx11.h>
+
+// Link to external libss
 #pragma comment(lib, "dxgi.lib")
-#pragma comment(lib, "dxerr.lib")
-#pragma comment(lib, "legacy_stdio_definitions.lib")
-
-// D3D HR Debugging Macro
-#if defined(DEBUG) | defined(_DEBUG)
-    #ifndef HR
-        #define HR(x)                                               \
-        {                                                           \
-            HRESULT hr = (x);                                       \
-            if(FAILED(hr))                                          \
-            {                                                       \
-                DXTraceW(__FILE__, (DWORD)__LINE__, hr, L#x, true); \
-            }                                                       \
-        }
-    #endif // End of HR macro definition
-#else // Debug Not defined
-    #ifndef HR
-        #define HR(x)(x)
-    #endif
-#endif // End of HR Debug Macro
-
-
 
 RenderingContext::RenderingContext(ClientWindow& clientWindow)
 	: _device(0)
@@ -48,10 +27,13 @@ RenderingContext::RenderingContext(ClientWindow& clientWindow)
 	, _renderTargetView(0)
 	, _depthStencilView(0)
 	, _depthStencilBuffer(0)
+	, _blendState(0)
+	, _samplerState(0)
 	, _clientWindow(clientWindow)
 	, _msaaQuality(0)
 {
 	InitD3D();
+	PrepareShaders();
 }
 
 RenderingContext::~RenderingContext()
@@ -113,7 +95,7 @@ void RenderingContext::OnResize()
 
 void RenderingContext::ClearViews()
 {
-	float bkgcol[4] = {0.0f, 0.0f, 1.0f, 0.0f};
+	float bkgcol[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 	_deviceContext->ClearRenderTargetView(_renderTargetView.Get(), bkgcol);
 	_deviceContext->ClearDepthStencilView(_depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
@@ -123,12 +105,56 @@ void RenderingContext::Present()
 	HR(_swapChain->Present(0, 0));
 }
 
-comptr<ID3D11Device> RenderingContext::getDevice() const
+extern float rot;
+
+void RenderingContext::RenderModel(const Model& model)
+{	
+	XMMATRIX rotmatrix = XMMatrixRotationY(rot);
+	XMMATRIX world = rotmatrix;
+
+	XMVECTOR pos = XMVectorSet(0.0f, 10.0f, -10.0f, 1.0f);
+	XMVECTOR foc = XMVectorSet(1.0f, 1.0f, 1.0f, 0.0);
+	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	XMMATRIX view = XMMatrixLookAtLH(pos, foc, up);
+	XMMATRIX proj = XMMatrixPerspectiveFovLH(3.141592f * 0.25f, static_cast<float>(_clientWindow.GetWidth()) / static_cast<float>(_clientWindow.GetHeight()), 1.0f, 1000.0f);
+
+	XMMATRIX wvp = world * view * proj;
+
+	Default3dShader::ConstantBuffer cb;
+	cb.gWorld = world;
+	cb.gWorldInvTranspose = math::InverseTranspose(world);
+	cb.gWorldViewProj = wvp;
+
+	_deviceContext->UpdateSubresource(_default3dShader->getConstantBuffer().Get(), 0, 0, &cb, 0, 0);
+
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+
+	// Input Assembly Stage
+	_deviceContext->IASetInputLayout(_default3dShader->getInputLayout().Get());
+	_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	_deviceContext->IASetVertexBuffers(0, 1, model.GetVertexBuffer().GetAddressOf(), &stride, &offset);
+	_deviceContext->IASetIndexBuffer(model.GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
+
+	// Vertex Shader Stage
+	_deviceContext->VSSetShader(_default3dShader->getVertexShader().Get(), 0, 0);
+	_deviceContext->VSSetConstantBuffers(0, 1, _default3dShader->getConstantBuffer().GetAddressOf());
+
+	// Pixel Shader Stage
+	_deviceContext->PSSetShader(_default3dShader->getPixelShader().Get(), 0, 0);
+	_deviceContext->PSSetShaderResources(0, 1, model.GetTexture().GetAddressOf());
+	_deviceContext->PSSetSamplers(0, 1, _samplerState.GetAddressOf());
+	_deviceContext->PSSetConstantBuffers(0, 1, _default3dShader->getConstantBuffer().GetAddressOf());
+
+	_deviceContext->DrawIndexed(model.GetIndexCount(), 0, 0);
+}
+
+comptr<ID3D11Device> RenderingContext::GetDevice() const
 {
 	return _device;
 }
 
-comptr<ID3D11DeviceContext> RenderingContext::getDeviceContext() const
+comptr<ID3D11DeviceContext> RenderingContext::GetDeviceContext() const
 {
 	return _deviceContext;
 }
@@ -235,9 +261,54 @@ void RenderingContext::InitD3D()
 
 	HR(dxgiFactory->CreateSwapChain(_device.Get(), &scd, &_swapChain));
 
+	// Release temporary com pointers
 	dxgiFactory->Release();
 	dxgiAdapter->Release();
 	dxgiDevice->Release();
 
+	// Create and set custom Blend State
+	D3D11_BLEND_DESC blendDesc = {};
+	blendDesc.RenderTarget[0].BlendEnable = TRUE;
+	blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+	blendDesc.IndependentBlendEnable = FALSE;
+	blendDesc.AlphaToCoverageEnable = TRUE;
+	
+	HR(_device->CreateBlendState(&blendDesc, &_blendState));
+	_deviceContext->OMSetBlendState(_blendState.Get(), 0, 0xFFFFFFFF);
+
+	// Create and set custom Sampler State
+	D3D11_SAMPLER_DESC samplerDesc = {};
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+
+	samplerDesc.BorderColor[0] = 0.0f;
+	samplerDesc.BorderColor[1] = 0.0f;
+	samplerDesc.BorderColor[2] = 0.0f;
+	samplerDesc.BorderColor[3] = 0.0f;
+
+	samplerDesc.Filter        = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.MaxAnisotropy = 6;
+	samplerDesc.MinLOD        = -FLT_MAX;
+	samplerDesc.MaxLOD        = +FLT_MAX;
+	samplerDesc.MipLODBias    = 0.0f;
+
+	// Create and set the sampler
+	HR(_device->CreateSamplerState(&samplerDesc, &_samplerState));
+	_deviceContext->PSSetSamplers(0, 1, _samplerState.GetAddressOf());
+
+	// Rest of initialization code shared with the OnResize method
 	OnResize();
+}
+
+void RenderingContext::PrepareShaders()
+{
+	_default3dShader = std::make_unique<Default3dShader>(_device);
 }

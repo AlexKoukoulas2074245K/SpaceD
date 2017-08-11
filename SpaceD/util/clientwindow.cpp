@@ -3,10 +3,10 @@
 /** File Description:                                               **/
 /*********************************************************************/
 
-// Remote Headers
-
 // Local Headers
 #include "clientwindow.h"
+
+// Remote Headers
 
 ClientWindow::ClientWindow(HINSTANCE instance, WNDPROC wndProc, const std::string& title, const int width, const int height)
 	: _title(title)

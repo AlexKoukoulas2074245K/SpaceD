@@ -5,11 +5,11 @@
 
 #pragma once
 
+// Local Headers
+
 // Remote Headers
 #include <Windows.h>
 #include <string>
-
-// Local Headers
 
 class ClientWindow final
 {

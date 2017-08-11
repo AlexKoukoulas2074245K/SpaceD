@@ -3,14 +3,18 @@
 /** File Description:                                               **/
 /*********************************************************************/
 
+// Local Headers
+#include "game.h"
+#include "rendering\objloader.h"
+#include "rendering\renderingcontext.h"
+#include "rendering\model.h"
+#include "util\clientwindow.h"
+#include "util\gametimer.h"
+
 // Remote Headers
 #include <sstream>
 
-// Local Headers
-#include "game.h"
-#include "rendering\renderingcontext.h"
-#include "util\clientwindow.h"
-#include "util\gametimer.h"
+float rot = 0;
 
 namespace
 {
@@ -22,9 +26,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return game->MsgProc(hwnd, msg, wParam, lParam);
 }
 
-Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, const int clientHeight)
-	: _clientWindow(nullptr)
-	, _gameTimer(std::make_unique<GameTimer>())
+Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, const int clientHeight)	
+	: _gameTimer(std::make_unique<GameTimer>())
 	, _paused(false)
 	, _minimized(false)
 	, _maximized(false)
@@ -33,8 +36,13 @@ Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, 
 	// Delayed window and rendering context creation to allow assignment to global Game pointer (Window procs can not 
 	// be members of a class)
 	game = this;
-	_clientWindow = std::make_unique<ClientWindow>(hInstance, WndProc, clientName, clientWidth, clientHeight);
+
+	_clientWindow     = std::make_unique<ClientWindow>(hInstance, WndProc, clientName, clientWidth, clientHeight);
 	_renderingContext = std::make_unique<RenderingContext>(*_clientWindow);
+	_objLoader        = std::make_unique<OBJLoader>();
+
+	_shipModel = _objLoader->LoadOBJModelByName("ship_dps");
+	_shipModel->prepareD3DComponents(_renderingContext->GetDevice());
 }
 
 Game::~Game(){}
@@ -60,7 +68,7 @@ void Game::Run()
 			if (!_paused)
 			{
 				CalculateFrameStats();
-				Update();
+				Update(_gameTimer->DeltaTime());
 				Render();
 			}
 			else
@@ -234,13 +242,15 @@ void Game::OnMouseMove(WPARAM btnState, int x, int y)
 {
 }
 
-void Game::Update()
-{
+void Game::Update(const float deltaTime)
+{	
+	rot += (3.141592f / 20.0f) * deltaTime;
 }
 
 void Game::Render()
 {
 	_renderingContext->ClearViews();
+	_renderingContext->RenderModel(*_shipModel);
 	_renderingContext->Present();
 }
 
