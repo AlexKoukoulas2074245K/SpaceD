@@ -5,9 +5,7 @@
 
 // Local Headers
 #include "renderingcontext.h"
-#include "model.h"
 #include "shaders/default3dshader.h"
-#include "../util/math.h"
 #include "../util/clientwindow.h"
 
 // Remote Headers
@@ -29,11 +27,12 @@ RenderingContext::RenderingContext(ClientWindow& clientWindow)
 	, _depthStencilBuffer(0)
 	, _blendState(0)
 	, _samplerState(0)
+	, _defaultRastState(0)
+	, _wireframeRastState(0)
 	, _clientWindow(clientWindow)
 	, _msaaQuality(0)
 {
-	InitD3D();
-	PrepareShaders();
+	InitD3D();	
 }
 
 RenderingContext::~RenderingContext()
@@ -91,72 +90,6 @@ void RenderingContext::OnResize()
 	_screenViewport.MaxDepth = 1.0f;
 
 	_deviceContext->RSSetViewports(1, &_screenViewport);
-}
-
-void RenderingContext::ClearViews()
-{
-	float bkgcol[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-	_deviceContext->ClearRenderTargetView(_renderTargetView.Get(), bkgcol);
-	_deviceContext->ClearDepthStencilView(_depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-}
-
-void RenderingContext::Present()
-{
-	HR(_swapChain->Present(0, 0));
-}
-
-extern float rot;
-
-void RenderingContext::RenderModel(const Model& model)
-{	
-	XMMATRIX rotmatrix = XMMatrixRotationY(rot);
-	XMMATRIX world = rotmatrix;
-
-	XMVECTOR pos = XMVectorSet(0.0f, 10.0f, -10.0f, 1.0f);
-	XMVECTOR foc = XMVectorSet(1.0f, 1.0f, 1.0f, 0.0);
-	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	XMMATRIX view = XMMatrixLookAtLH(pos, foc, up);
-	XMMATRIX proj = XMMatrixPerspectiveFovLH(3.141592f * 0.25f, static_cast<float>(_clientWindow.GetWidth()) / static_cast<float>(_clientWindow.GetHeight()), 1.0f, 1000.0f);
-
-	XMMATRIX wvp = world * view * proj;
-
-	Default3dShader::ConstantBuffer cb;
-	cb.gWorld = world;
-	cb.gWorldInvTranspose = math::InverseTranspose(world);
-	cb.gWorldViewProj = wvp;
-
-	_deviceContext->UpdateSubresource(_default3dShader->getConstantBuffer().Get(), 0, 0, &cb, 0, 0);
-
-	UINT stride = sizeof(Vertex);
-	UINT offset = 0;
-
-	// Input Assembly Stage
-	_deviceContext->IASetInputLayout(_default3dShader->getInputLayout().Get());
-	_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	_deviceContext->IASetVertexBuffers(0, 1, model.GetVertexBuffer().GetAddressOf(), &stride, &offset);
-	_deviceContext->IASetIndexBuffer(model.GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
-
-	// Vertex Shader Stage
-	_deviceContext->VSSetShader(_default3dShader->getVertexShader().Get(), 0, 0);
-	_deviceContext->VSSetConstantBuffers(0, 1, _default3dShader->getConstantBuffer().GetAddressOf());
-
-	// Pixel Shader Stage
-	_deviceContext->PSSetShader(_default3dShader->getPixelShader().Get(), 0, 0);
-	_deviceContext->PSSetShaderResources(0, 1, model.GetTexture().GetAddressOf());
-	_deviceContext->PSSetSamplers(0, 1, _samplerState.GetAddressOf());
-	_deviceContext->PSSetConstantBuffers(0, 1, _default3dShader->getConstantBuffer().GetAddressOf());
-
-	_deviceContext->DrawIndexed(model.GetIndexCount(), 0, 0);
-}
-
-comptr<ID3D11Device> RenderingContext::GetDevice() const
-{
-	return _device;
-}
-
-comptr<ID3D11DeviceContext> RenderingContext::GetDeviceContext() const
-{
-	return _deviceContext;
 }
 
 void RenderingContext::InitD3D()
@@ -304,11 +237,26 @@ void RenderingContext::InitD3D()
 	HR(_device->CreateSamplerState(&samplerDesc, &_samplerState));
 	_deviceContext->PSSetSamplers(0, 1, _samplerState.GetAddressOf());
 
+	// Define and create the rasterizer states
+	D3D11_RASTERIZER_DESC rd;
+	rd.AntialiasedLineEnable = TRUE;
+	rd.CullMode              = D3D11_CULL_NONE;
+	rd.DepthBias             = 0;
+	rd.DepthBiasClamp        = 0.0f;
+	rd.FillMode              = D3D11_FILL_SOLID;
+	rd.FrontCounterClockwise = 0;
+	rd.MultisampleEnable     = TRUE;
+	rd.ScissorEnable         = 0;
+	rd.SlopeScaledDepthBias  = 0.0f;
+
+	// Create default rast state
+	HR(_device->CreateRasterizerState(&rd, _defaultRastState.GetAddressOf()));
+	_deviceContext->RSSetState(_defaultRastState.Get());
+
+	// Create wireframe rast state
+	rd.FillMode = D3D11_FILL_WIREFRAME;
+	HR(_device->CreateRasterizerState(&rd, _wireframeRastState.GetAddressOf()));
+	
 	// Rest of initialization code shared with the OnResize method
 	OnResize();
-}
-
-void RenderingContext::PrepareShaders()
-{
-	_default3dShader = std::make_unique<Default3dShader>(_device);
-}
+}	

@@ -45,6 +45,9 @@
     <ClCompile Include="rendering\shaders\default3dshader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="rendering\renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="util\clientwindow.h">
@@ -81,6 +84,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="rendering\shaders\default3dshader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rendering\renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

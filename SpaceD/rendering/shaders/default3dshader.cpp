@@ -10,14 +10,14 @@
 
 // Remote Headers
 
+Default3dShader::~Default3dShader()
+{
+}
+
 Default3dShader::Default3dShader(comptr<ID3D11Device> device)
 	: Shader("default3d", device)
 {
 	PrepareConstantBuffersAndLayout(device);
-}
-
-Default3dShader::~Default3dShader()
-{
 }
 
 void Default3dShader::PrepareConstantBuffersAndLayout(comptr<ID3D11Device> device)

@@ -30,13 +30,18 @@ Model::Model(const std::string& modelName, std::vector<Vertex>& rawVertexData, c
 
 Model::~Model()
 {
-	OutputDebugString((std::string("Deleting model: ") + _name).c_str()); 
+	OutputDebugString((std::string("Deleting model: ") + _name + "\n").c_str()); 
 }
 
 void Model::prepareD3DComponents(comptr<ID3D11Device> device)
 {
 	LoadBuffers(device);
 	LoadTexture(device);
+}
+
+const math::Transform& Model::GetTransform() const
+{
+	return _transform;
 }
 
 UINT Model::GetIndexCount() const 

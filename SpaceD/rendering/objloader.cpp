@@ -142,6 +142,7 @@ std::shared_ptr<Model> OBJLoader::LoadOBJModel(const std::string& modelName, con
 		finalVertexData.emplace_back(currentPosData, currentTexData, currentNormalData);
 		finalIndexData.push_back(i);
 	}
-
-	return std::make_shared<Model>(modelName, finalVertexData, finalIndexData);
+	
+	// Can't use make shared with private constructors (even if OBJLoader is Model's friend)
+	return std::shared_ptr<Model>(new Model(modelName, finalVertexData, finalIndexData));
 }

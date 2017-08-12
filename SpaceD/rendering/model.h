@@ -14,14 +14,21 @@
 #include <string>
 #include <vector>
 
+// Forward declare friend
+class OBJLoader;
+class Game;
+
 class Model
 {
+	friend class OBJLoader;
+	friend class Game;
+
 public:
-	Model(const std::string& modelName, std::vector<Vertex>& rawVertexData, const std::vector<UINT>& rawIndexData);
 	virtual ~Model();
 
 	void prepareD3DComponents(comptr<ID3D11Device> device);
 
+	const math::Transform& GetTransform() const;
 	UINT GetIndexCount() const;
 	
 	comptr<ID3D11Buffer> GetVertexBuffer() const;
@@ -29,6 +36,8 @@ public:
 	comptr<ID3D11ShaderResourceView> GetTexture() const;
 
 private:
+	Model(const std::string& modelName, std::vector<Vertex>& rawVertexData, const std::vector<UINT>& rawIndexData);
+
 	void LoadBuffers(comptr<ID3D11Device> device);
 	void LoadTexture(comptr<ID3D11Device> device);
 

@@ -14,6 +14,13 @@
 class Shader
 {
 public:
+	enum ShaderType
+	{
+		DEFAULT_3D_SHADER = 0,
+		SHADER_COUNT = 1
+	};
+
+public:
 	Shader(const std::string& name, comptr<ID3D11Device> device);
 	virtual ~Shader();
 

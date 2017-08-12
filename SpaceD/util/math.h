@@ -17,6 +17,14 @@ namespace math
 		XMFLOAT3 translation;
 		XMFLOAT3 rotation;
 		XMFLOAT3 scale;
+
+		Transform()
+			: translation(XMFLOAT3(0.0f, 0.0f, 0.0f))
+			, rotation(XMFLOAT3(0.0f, 0.0f, 0.0f))
+			, scale(XMFLOAT3(1.0f, 1.0f, 1.0f))
+		{
+
+		}
 	};
 
 	static XMMATRIX InverseTranspose(CXMMATRIX M)

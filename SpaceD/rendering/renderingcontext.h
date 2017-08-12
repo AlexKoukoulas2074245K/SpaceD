@@ -13,32 +13,24 @@
 #include "vertex.h"
 
 // Forward Declarations
+class Renderer;
 class ClientWindow;
-class Shader;
 class Model;
 
 class RenderingContext final
 {
+	friend class Renderer;
+
 public:
-	RenderingContext(ClientWindow& clientWindow);
 	~RenderingContext();
 
-	void OnResize();
-	void ClearViews();
-	void Present();
-	
-	void RenderModel(const Model& model);
-
-	comptr<ID3D11Device> GetDevice() const;
-	comptr<ID3D11DeviceContext> GetDeviceContext() const;
-
 private:
+	RenderingContext(ClientWindow& clientWindow);
+	
 	void InitD3D();
-	void PrepareShaders();
+	void OnResize();
 	
 private:
-	std::unique_ptr<Shader> _default3dShader;
-
 	comptr<ID3D11Device> _device;
 	comptr<ID3D11DeviceContext> _deviceContext;
 	comptr<IDXGISwapChain> _swapChain;
@@ -47,6 +39,8 @@ private:
 	comptr<ID3D11Texture2D> _depthStencilBuffer;
 	comptr<ID3D11SamplerState> _samplerState;
 	comptr<ID3D11BlendState> _blendState;
+	comptr<ID3D11RasterizerState> _defaultRastState;
+	comptr<ID3D11RasterizerState> _wireframeRastState;
 
 	D3D11_VIEWPORT _screenViewport;
 

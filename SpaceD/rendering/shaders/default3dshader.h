@@ -11,8 +11,13 @@
 // Remote Headers
 #include "../../util/math.h"
 
+// Forward declare friends
+class Renderer;
+
 class Default3dShader: public Shader
 {
+	friend class Renderer;
+
 public:
 	struct ConstantBuffer
 	{
@@ -28,8 +33,10 @@ public:
 	};
 
 public:
-	Default3dShader(comptr<ID3D11Device> device);
 	~Default3dShader();
+
+private:
+	Default3dShader(comptr<ID3D11Device> device);
 
 protected:
 	void PrepareConstantBuffersAndLayout(comptr<ID3D11Device> device) override;

@@ -5,11 +5,11 @@
 
 // Local Headers
 #include "game.h"
-#include "rendering\objloader.h"
-#include "rendering\renderingcontext.h"
-#include "rendering\model.h"
-#include "util\clientwindow.h"
-#include "util\gametimer.h"
+#include "rendering/objloader.h"
+#include "rendering/renderer.h"
+#include "rendering/model.h"
+#include "util/clientwindow.h"
+#include "util/gametimer.h"
 
 // Remote Headers
 #include <sstream>
@@ -37,12 +37,12 @@ Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, 
 	// be members of a class)
 	game = this;
 
-	_clientWindow     = std::make_unique<ClientWindow>(hInstance, WndProc, clientName, clientWidth, clientHeight);
-	_renderingContext = std::make_unique<RenderingContext>(*_clientWindow);
-	_objLoader        = std::make_unique<OBJLoader>();
+	_clientWindow = std::make_unique<ClientWindow>(hInstance, WndProc, clientName, clientWidth, clientHeight);
+	_renderer     = std::make_unique<Renderer>(*_clientWindow);
+	_objLoader    = std::make_unique<OBJLoader>();
 
-	_shipModel = _objLoader->LoadOBJModelByName("ship_dps");
-	_shipModel->prepareD3DComponents(_renderingContext->GetDevice());
+	_shipModel = _objLoader->LoadOBJModelByName("ship_tank");
+	_shipModel->prepareD3DComponents(_renderer->GetDevice());
 }
 
 Game::~Game(){}
@@ -111,7 +111,7 @@ LRESULT Game::MsgProc(HWND handle, UINT msg, WPARAM wParam, LPARAM lParam)
 				_clientWindow->UpdateOnResize(newWidth, newHeight);
 			}
 
-			if (_renderingContext)
+			if (_renderer)
 			{
 				if (wParam == SIZE_MINIMIZED)
 				{
@@ -227,7 +227,7 @@ LRESULT Game::MsgProc(HWND handle, UINT msg, WPARAM wParam, LPARAM lParam)
 
 void Game::OnResize()
 {	
-	_renderingContext->OnResize();
+	_renderer->OnResize();
 }
 
 void Game::OnMouseDown(WPARAM btnState, int x, int y)
@@ -245,13 +245,14 @@ void Game::OnMouseMove(WPARAM btnState, int x, int y)
 void Game::Update(const float deltaTime)
 {	
 	rot += (3.141592f / 20.0f) * deltaTime;
+	_shipModel->_transform.rotation.y = rot;
 }
 
 void Game::Render()
 {
-	_renderingContext->ClearViews();
-	_renderingContext->RenderModel(*_shipModel);
-	_renderingContext->Present();
+	_renderer->ClearViews();
+	_renderer->RenderModel(*_shipModel);
+	_renderer->Present();
 }
 
 void Game::CalculateFrameStats()
