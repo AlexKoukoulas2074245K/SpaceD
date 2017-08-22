@@ -29,7 +29,7 @@ public:
 	void Present();
 
 	void SetShader(const Shader::ShaderType shader);
-	void RenderModel(const Model& model);
+	void RenderModel(const Model& model, const void* constantBufferData);
 
 	comptr<ID3D11Device> GetDevice() const;
 	comptr<ID3D11DeviceContext> GetDeviceContext() const;

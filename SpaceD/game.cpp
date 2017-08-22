@@ -5,16 +5,18 @@
 
 // Local Headers
 #include "game.h"
+#include "inputhandler.h"
+#include "camera.h"
 #include "rendering/objloader.h"
 #include "rendering/renderer.h"
 #include "rendering/model.h"
+#include "rendering/shaders/default3dwithlightingshader.h"
 #include "util/clientwindow.h"
 #include "util/gametimer.h"
+#include "util/math.h"
 
 // Remote Headers
 #include <sstream>
-
-float rot = 0;
 
 namespace
 {
@@ -26,8 +28,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return game->MsgProc(hwnd, msg, wParam, lParam);
 }
 
-Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, const int clientHeight)	
+Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, const int clientHeight)		
 	: _gameTimer(std::make_unique<GameTimer>())
+	, _debugPrompt(false)
 	, _paused(false)
 	, _minimized(false)
 	, _maximized(false)
@@ -40,8 +43,10 @@ Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, 
 	_clientWindow = std::make_unique<ClientWindow>(hInstance, WndProc, clientName, clientWidth, clientHeight);
 	_renderer     = std::make_unique<Renderer>(*_clientWindow);
 	_objLoader    = std::make_unique<OBJLoader>();
+	_inputHandler = std::make_unique<InputHandler>();	
+	_camera       = std::make_unique<Camera>();
 
-	_shipModel = _objLoader->LoadOBJModelByName("ship_tank");
+	_shipModel = _objLoader->LoadOBJModelByName("ship_dps");
 	_shipModel->prepareD3DComponents(_renderer->GetDevice());
 }
 
@@ -68,8 +73,13 @@ void Game::Run()
 			if (!_paused)
 			{
 				CalculateFrameStats();
-				Update(_gameTimer->DeltaTime());
+
+				if (!_debugPrompt)
+				{
+					Update(_gameTimer->DeltaTime());
+				}
 				Render();
+				_inputHandler->OnFrameEnd();
 			}
 			else
 			{
@@ -203,23 +213,69 @@ LRESULT Game::MsgProc(HWND handle, UINT msg, WPARAM wParam, LPARAM lParam)
 		} break;
 
 		case WM_LBUTTONDOWN:
-		case WM_MBUTTONDOWN:
+		{
+			_inputHandler->OnMouseDown(InputHandler::Button::LMBUTTON, lParam);
+		} break;
+
 		case WM_RBUTTONDOWN:
 		{
-			OnMouseDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));			
+			_inputHandler->OnMouseDown(InputHandler::Button::RMBUTTON, lParam);
 		} break;
 
 		case WM_LBUTTONUP:
-		case WM_MBUTTONUP:
+		{
+			_inputHandler->OnMouseUp(InputHandler::Button::LMBUTTON, lParam);
+		} break;
+
 		case WM_RBUTTONUP:
 		{
-			OnMouseUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));			
+			_inputHandler->OnMouseUp(InputHandler::Button::RMBUTTON, lParam);
 		} break;
 
 		case WM_MOUSEMOVE:
 		{
-			OnMouseMove(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-		} break;		
+			_inputHandler->OnMouseMove(wParam, lParam);
+		} break;
+
+		case WM_MOUSEWHEEL:
+		{
+			_inputHandler->OnMouseWheelMove(wParam, lParam);
+		} break;
+
+		case WM_MBUTTONUP:
+		{
+			_debugPrompt = !_debugPrompt;
+		} break;
+
+		case WM_KEYDOWN:
+		{
+			switch (wParam)
+			{
+				case VK_LEFT:  _inputHandler->OnKeyDown(InputHandler::LEFT, lParam); break;
+				case VK_RIGHT: _inputHandler->OnKeyDown(InputHandler::RIGHT, lParam); break;
+				case VK_UP:    _inputHandler->OnKeyDown(InputHandler::UP, lParam); break;
+				case VK_DOWN:  _inputHandler->OnKeyDown(InputHandler::DOWN, lParam); break;
+				case 0x41:     _inputHandler->OnKeyDown(InputHandler::A, lParam); break;
+				case 0x44:     _inputHandler->OnKeyDown(InputHandler::D, lParam); break;
+				case 0x53:     _inputHandler->OnKeyDown(InputHandler::S, lParam); break;
+				case 0x57:     _inputHandler->OnKeyDown(InputHandler::W, lParam); break;
+			}
+		} break;
+
+		case WM_KEYUP:
+		{
+			switch (wParam)
+			{
+				case VK_LEFT:  _inputHandler->OnKeyUp(InputHandler::LEFT, lParam); break;
+				case VK_RIGHT: _inputHandler->OnKeyUp(InputHandler::RIGHT, lParam); break;
+				case VK_UP:    _inputHandler->OnKeyUp(InputHandler::UP, lParam); break;
+				case VK_DOWN:  _inputHandler->OnKeyUp(InputHandler::DOWN, lParam); break;
+				case 0x41:     _inputHandler->OnKeyUp(InputHandler::A, lParam); break;
+				case 0x44:     _inputHandler->OnKeyUp(InputHandler::D, lParam); break;
+				case 0x53:     _inputHandler->OnKeyUp(InputHandler::S, lParam); break;
+				case 0x57:     _inputHandler->OnKeyUp(InputHandler::W, lParam); break;
+			}
+		} break;
 	}
 
 	return DefWindowProc(handle, msg, wParam, lParam);
@@ -230,28 +286,56 @@ void Game::OnResize()
 	_renderer->OnResize();
 }
 
-void Game::OnMouseDown(WPARAM btnState, int x, int y)
-{
-}
-
-void Game::OnMouseUp(WPARAM btnState, int x, int y)
-{
-}
-
-void Game::OnMouseMove(WPARAM btnState, int x, int y)
-{
-}
-
 void Game::Update(const float deltaTime)
-{	
-	rot += (3.141592f / 20.0f) * deltaTime;
-	_shipModel->_transform.rotation.y = rot;
+{
+	if (_inputHandler->isKeyDown(InputHandler::LEFT)) _camera->RotateCamera(Camera::LEFT, deltaTime * 4);
+	if (_inputHandler->isKeyDown(InputHandler::RIGHT)) _camera->RotateCamera(Camera::RIGHT, deltaTime * 4);
+	if (_inputHandler->isKeyDown(InputHandler::UP)) _camera->RotateCamera(Camera::UP, deltaTime * 4);
+	if (_inputHandler->isKeyDown(InputHandler::DOWN)) _camera->RotateCamera(Camera::DOWN, deltaTime * 4);
+	if (_inputHandler->isKeyDown(InputHandler::W)) _camera->MoveCamera(Camera::FORWARD, deltaTime * 4);
+	if (_inputHandler->isKeyDown(InputHandler::A)) _camera->MoveCamera(Camera::LEFT, deltaTime * 4);
+	if (_inputHandler->isKeyDown(InputHandler::S)) _camera->MoveCamera(Camera::BACKWARD, deltaTime * 4);
+	if (_inputHandler->isKeyDown(InputHandler::D)) _camera->MoveCamera(Camera::RIGHT,  deltaTime* 4);
 }
 
 void Game::Render()
 {
 	_renderer->ClearViews();
-	_renderer->RenderModel(*_shipModel);
+
+	// Extract transform and build xm matrices
+	const auto& modelTransform = _shipModel->GetTransform();
+
+	const auto scaleMatrix = XMMatrixScaling(modelTransform.scale.x, modelTransform.scale.y, modelTransform.scale.z);
+	const auto rotMatrix = XMMatrixRotationX(modelTransform.rotation.x) * XMMatrixRotationY(modelTransform.rotation.y) * XMMatrixRotationZ(modelTransform.rotation.z);
+	const auto transMatrix = XMMatrixTranslation(modelTransform.translation.x, modelTransform.translation.y, modelTransform.translation.z);
+	const auto world = scaleMatrix * rotMatrix * transMatrix;
+
+	XMMATRIX viewMatrix;
+	_camera->CalculateViewMatrix(viewMatrix);
+
+	XMMATRIX projMatrix;
+	_camera->CalculateProjectionMatrix(*_clientWindow, projMatrix);
+
+	auto wvp = world * viewMatrix * projMatrix;
+
+	Default3dWithLightingShader::ConstantBuffer cb;
+	cb.gEyePosW = _camera->GetPos();
+	cb.gLightCount = 3;
+	
+	cb.gMaterial.Ambient = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
+	cb.gMaterial.Diffuse = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
+	cb.gMaterial.Specular = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
+
+	cb.gDirLight.Ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);	
+    cb.gDirLight.Diffuse = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
+	cb.gDirLight.Specular = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
+    cb.gDirLight.Direction = XMFLOAT3(0.0f, -0.707f, -0.707f);
+
+	cb.gWorld = world;
+	cb.gWorldInvTranspose = math::InverseTranspose(world);
+	cb.gWorldViewProj = wvp;
+
+	_renderer->RenderModel(*_shipModel, &cb);
 	_renderer->Present();
 }
 

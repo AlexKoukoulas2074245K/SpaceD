@@ -7,9 +7,9 @@
 
 // Local Headers
 #include "shader.h"
+#include "../../util/math.h"
 
 // Remote Headers
-#include "../../util/math.h"
 
 // Forward declare friends
 class Renderer;

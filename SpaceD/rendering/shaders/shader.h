@@ -16,8 +16,9 @@ class Shader
 public:
 	enum ShaderType
 	{
-		DEFAULT_3D_SHADER = 0,
-		SHADER_COUNT = 1
+		DEFAULT_3D = 0,
+		DEFAULT_3D_WITH_LIGHTING = 1,
+		SHADER_COUNT = 2
 	};
 
 public:

@@ -29,6 +29,8 @@ public:
 	void prepareD3DComponents(comptr<ID3D11Device> device);
 
 	const math::Transform& GetTransform() const;
+	math::Transform& GetTransform();
+
 	UINT GetIndexCount() const;
 	
 	comptr<ID3D11Buffer> GetVertexBuffer() const;

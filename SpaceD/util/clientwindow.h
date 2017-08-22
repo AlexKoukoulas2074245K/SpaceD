@@ -17,9 +17,11 @@ public:
 	ClientWindow(HINSTANCE instance, WNDPROC wndProc, const std::string& title, const int width, const int height);
 	~ClientWindow();
 
-	int GetWidth() const;
-	int GetHeight() const;
+	INT GetWidth() const;
+	INT GetHeight() const;
+	FLOAT GetAspectRatio() const;
 	HWND GetHandle() const;
+
 	const std::string& GetTitle() const;
 
 	void UpdateOnResize(const int newWidth, const int newHeight);

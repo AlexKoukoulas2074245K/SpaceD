@@ -44,6 +44,11 @@ const math::Transform& Model::GetTransform() const
 	return _transform;
 }
 
+math::Transform& Model::GetTransform()
+{
+	return _transform;
+}
+
 UINT Model::GetIndexCount() const 
 {
 	return static_cast<UINT>(_rawIndexData.size());

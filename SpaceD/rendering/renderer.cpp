@@ -9,6 +9,7 @@
 #include "renderer.h"
 #include "renderingcontext.h"
 #include "shaders/default3dshader.h"
+#include "shaders/default3dwithlightingshader.h"
 #include "../util/clientwindow.h"
 #include "model.h"
 
@@ -16,7 +17,7 @@
 
 Renderer::Renderer(ClientWindow& clientWindow)
 	: _renderingContext(new RenderingContext(clientWindow))
-	, _activeShaderType(Shader::ShaderType::DEFAULT_3D_SHADER)
+	, _activeShaderType(Shader::ShaderType::DEFAULT_3D_WITH_LIGHTING)
 {
 	LoadShaders();
 }
@@ -47,31 +48,10 @@ void Renderer::SetShader(const Shader::ShaderType shader)
 	_activeShaderType = shader;
 }
 
-void Renderer::RenderModel(const Model& model)
-{
-	// Extract transform and build xm matrices
-	const auto& modelTransform = model.GetTransform();
-
-	const auto scaleMatrix = XMMatrixScaling(modelTransform.scale.x, modelTransform.scale.y, modelTransform.scale.z);
-	const auto rotMatrix   = XMMatrixRotationX(modelTransform.rotation.x) * XMMatrixRotationY(modelTransform.rotation.y) * XMMatrixRotationZ(modelTransform.rotation.z);
-	const auto transMatrix = XMMatrixTranslation(modelTransform.translation.x, modelTransform.translation.y, modelTransform.translation.z);
-	const auto world       = scaleMatrix * rotMatrix * transMatrix;
-		
-    auto pos  = XMVectorSet(0.0f, 10.0f, -10.0f, 1.0f);
-	auto foc  = XMVectorSet(1.0f, 1.0f, 1.0f, 0.0);
-	auto up   = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	auto view = XMMatrixLookAtLH(pos, foc, up);
-	auto proj = XMMatrixPerspectiveFovLH(3.141592f * 0.25f, static_cast<float>(_renderingContext->_clientWindow.GetWidth()) / static_cast<float>(_renderingContext->_clientWindow.GetHeight()), 1.0f, 1000.0f);
-
-	auto wvp = world * view * proj;
-
-	Default3dShader::ConstantBuffer cb;
-	cb.gWorld = world;
-	cb.gWorldInvTranspose = math::InverseTranspose(world);
-	cb.gWorldViewProj = wvp;
-	
+void Renderer::RenderModel(const Model& model, const void* constantBufferData)
+{	
 	auto& activeShader = _shaders[_activeShaderType];
-	_renderingContext->_deviceContext->UpdateSubresource(activeShader->getConstantBuffer().Get(), 0, 0, &cb, 0, 0);
+	_renderingContext->_deviceContext->UpdateSubresource(activeShader->getConstantBuffer().Get(), 0, 0, constantBufferData, 0, 0);
 
 	auto stride = sizeof(Vertex);
 	auto offset = 0U;
@@ -108,6 +88,7 @@ void Renderer::LoadShaders()
 {
 	_shaders.clear();
 	_shaders.resize(Shader::ShaderType::SHADER_COUNT);
-	_shaders[Shader::ShaderType::DEFAULT_3D_SHADER] = std::move(std::unique_ptr<Shader>(new Default3dShader(_renderingContext->_device)));
+	_shaders[Shader::ShaderType::DEFAULT_3D] = std::move(std::unique_ptr<Shader>(new Default3dShader(_renderingContext->_device)));
+	_shaders[Shader::ShaderType::DEFAULT_3D_WITH_LIGHTING] = std::move(std::unique_ptr<Shader>(new Default3dWithLightingShader(_renderingContext->_device)));
 	
 }

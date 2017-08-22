@@ -12,6 +12,8 @@
 
 namespace math
 {
+	static const FLOAT PI = 3.1415926f;
+
 	struct Transform
 	{
 		XMFLOAT3 translation;

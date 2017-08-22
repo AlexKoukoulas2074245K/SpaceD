@@ -19,7 +19,7 @@ ClientWindow::ClientWindow(HINSTANCE instance, WNDPROC wndProc, const std::strin
 	wc.cbClsExtra    = 0;
 	wc.cbWndExtra    = 0;
 	wc.hbrBackground = 0;
-	wc.hCursor       = 0;
+	wc.hCursor       = LoadCursor(0, IDC_ARROW);
 	wc.hIcon         = LoadIcon(0, IDI_APPLICATION);
 	wc.hInstance     = instance;
 	wc.lpfnWndProc   = wndProc;
@@ -55,14 +55,19 @@ ClientWindow::ClientWindow(HINSTANCE instance, WNDPROC wndProc, const std::strin
 
 ClientWindow::~ClientWindow(){}
 
-int ClientWindow::GetWidth() const
+INT ClientWindow::GetWidth() const
 {
 	return _width;
 }
 
-int ClientWindow::GetHeight() const
+INT ClientWindow::GetHeight() const
 {
 	return _height;
+}
+
+FLOAT ClientWindow::GetAspectRatio() const
+{
+	return static_cast<float>(_width)/_height;
 }
 
 const std::string& ClientWindow::GetTitle() const

@@ -127,6 +127,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="camera.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
+    <ClCompile Include="inputhandler.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
     <ClCompile Include="rendering\model.cpp">
       <SubType>
       </SubType>
@@ -144,6 +152,10 @@
       </SubType>
     </ClCompile>
     <ClCompile Include="rendering\shaders\default3dshader.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
+    <ClCompile Include="rendering\shaders\default3dwithlightingshader.cpp">
       <SubType>
       </SubType>
     </ClCompile>
@@ -167,6 +179,14 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="camera.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
+    <ClInclude Include="inputhandler.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
     <ClInclude Include="rendering\d3dcommon.h">
       <SubType>
       </SubType>
@@ -184,6 +204,10 @@
       </SubType>
     </ClInclude>
     <ClInclude Include="rendering\shaders\default3dshader.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
+    <ClInclude Include="rendering\shaders\default3dwithlightingshader.h">
       <SubType>
       </SubType>
     </ClInclude>

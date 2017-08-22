@@ -13,11 +13,13 @@
 #include <Windowsx.h>
 
 // Forward Declarations
+class InputHandler;
 class ClientWindow;
 class GameTimer;
 class Renderer;
 class OBJLoader;
 class Model;
+class Camera;
 
 class Game final
 {
@@ -31,21 +33,20 @@ public:
 
 private:
 	void OnResize();
-	void OnMouseDown(WPARAM btnState, int x, int y);
-	void OnMouseUp(WPARAM btnState, int x, int y);
-	void OnMouseMove(WPARAM btnState, int x, int y);
-
 	void Update(const float deltaTime);
 	void Render();
 	void CalculateFrameStats();
 
 private:
+	std::unique_ptr<InputHandler> _inputHandler;
     std::unique_ptr<ClientWindow> _clientWindow;
 	std::unique_ptr<GameTimer> _gameTimer;
 	std::unique_ptr<Renderer> _renderer;
 	std::unique_ptr<OBJLoader> _objLoader;
+	std::unique_ptr<Camera> _camera;
 	std::shared_ptr<Model> _shipModel;
-
+	
+	bool _debugPrompt;
 	bool _paused;
 	bool _minimized;
 	bool _maximized;
