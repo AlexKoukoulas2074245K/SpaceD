@@ -18,6 +18,7 @@ class ClientWindow;
 class GameTimer;
 class Renderer;
 class Model;
+class UIModel;
 class Camera;
 
 class Game final
@@ -43,6 +44,7 @@ private:
 	std::unique_ptr<Renderer> _renderer;	
 	std::unique_ptr<Camera> _camera;
 	std::shared_ptr<Model> _shipModel;
+	std::shared_ptr<UIModel> _uiModel;
 	
 	bool _debugPrompt;
 	bool _paused;

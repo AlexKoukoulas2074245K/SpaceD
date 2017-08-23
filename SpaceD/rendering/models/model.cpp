@@ -6,6 +6,7 @@
 // Local Headers
 #include "model.h"
 #include "../textureloader.h"
+#include "../objloader.h"
 
 // Remote Headers
 #include <d3dx11.h>
@@ -17,27 +18,21 @@
 // Constant members
 const std::string Model::MODEL_DIRECTORY_PATH = "../res/models/";
 const std::string Model::MODEL_TEXTURE_EXT    = ".png";
+const std::string Model::MODEL_OBJDATA_EXT    = ".obj";
 
-Model::Model(const std::string& modelName, const std::vector<Vertex>& rawVertexData, const std::vector<UINT>& rawIndexData)
+
+Model::Model(const std::string& modelName, comptr<ID3D11Device> device)
 	: _name(modelName)
 	, _texture(0)
 	, _vertexBuffer(0)
 	, _indexBuffer(0)
-	, _rawVertexData(rawVertexData)
-	, _rawIndexData(rawIndexData)
 {
-	
+	LoadModelComponents(device);
 }
 
 Model::~Model()
 {
 	OutputDebugString((std::string("Deleting model: ") + _name + "\n").c_str()); 
-}
-
-void Model::PrepareD3DComponents(comptr<ID3D11Device> device)
-{
-	LoadBuffers(device);
-	LoadTexture(device);
 }
 
 const XMMATRIX Model::CalculateWorldMatrix() const
@@ -78,6 +73,25 @@ comptr<ID3D11ShaderResourceView> Model::GetTexture() const
 	return _texture;
 }
 
+void Model::LoadModelComponents(comptr<ID3D11Device> device)
+{
+    LoadModelData(device);	
+	LoadTexture(device);
+	LoadBuffers(device);
+}
+
+void Model::LoadModelData(comptr<ID3D11Device> device)
+{
+	const auto modelData = OBJLoader::Get().LoadOBJData(MODEL_DIRECTORY_PATH + _name + "/" + _name + MODEL_OBJDATA_EXT);
+	_rawVertexData = modelData->vertexData;
+	_rawIndexData = modelData->indexData;
+}
+
+void Model::LoadTexture(comptr<ID3D11Device> device)
+{
+	_texture = TextureLoader::Get().LoadTexture(MODEL_DIRECTORY_PATH + _name + "/" + _name + MODEL_TEXTURE_EXT, device);
+}
+
 void Model::LoadBuffers(comptr<ID3D11Device> device)
 {
 	_vertexBuffer.Reset();
@@ -85,38 +99,33 @@ void Model::LoadBuffers(comptr<ID3D11Device> device)
 
 	// Describe and create vertex buffer
 	D3D11_BUFFER_DESC vbd;
-	vbd.BindFlags           = D3D11_BIND_VERTEX_BUFFER;
-	vbd.ByteWidth           = sizeof(Vertex) * _rawVertexData.size();
-	vbd.CPUAccessFlags      = 0;
-	vbd.MiscFlags           = 0;
+	vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vbd.ByteWidth = sizeof(Vertex) * _rawVertexData.size();
+	vbd.CPUAccessFlags = 0;
+	vbd.MiscFlags = 0;
 	vbd.StructureByteStride = 0;
-	vbd.Usage               = D3D11_USAGE_IMMUTABLE;
+	vbd.Usage = D3D11_USAGE_IMMUTABLE;
 
 	D3D11_SUBRESOURCE_DATA vsrd;
-	vsrd.pSysMem          = &_rawVertexData[0];
-	vsrd.SysMemPitch      = 0;
+	vsrd.pSysMem = &_rawVertexData[0];
+	vsrd.SysMemPitch = 0;
 	vsrd.SysMemSlicePitch = 0;
 
 	device->CreateBuffer(&vbd, &vsrd, _vertexBuffer.GetAddressOf());
 
 	// Describe and create index buffer;
 	D3D11_BUFFER_DESC ibd;
-	ibd.BindFlags           = D3D11_BIND_INDEX_BUFFER;
-	ibd.ByteWidth           = sizeof(UINT) * _rawIndexData.size();
-	ibd.CPUAccessFlags      = 0;
-	ibd.MiscFlags           = 0;
+	ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	ibd.ByteWidth = sizeof(UINT) * _rawIndexData.size();
+	ibd.CPUAccessFlags = 0;
+	ibd.MiscFlags = 0;
 	ibd.StructureByteStride = 0;
-	ibd.Usage               = D3D11_USAGE_IMMUTABLE;
+	ibd.Usage = D3D11_USAGE_IMMUTABLE;
 
 	D3D11_SUBRESOURCE_DATA isrd;
-	isrd.pSysMem          = &_rawIndexData[0];
-	isrd.SysMemPitch      = 0;
+	isrd.pSysMem = &_rawIndexData[0];
+	isrd.SysMemPitch = 0;
 	isrd.SysMemSlicePitch = 0;
 
 	device->CreateBuffer(&ibd, &isrd, _indexBuffer.GetAddressOf());
-}
-
-void Model::LoadTexture(comptr<ID3D11Device> device)
-{
-	_texture = TextureLoader::Get().LoadTexture(MODEL_DIRECTORY_PATH + _name + "/" + _name + MODEL_TEXTURE_EXT, device);
 }

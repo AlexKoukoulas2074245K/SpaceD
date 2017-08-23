@@ -45,8 +45,8 @@ Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, 
 	_inputHandler = std::make_unique<InputHandler>();	
 	_camera       = std::make_unique<Camera>();
 
-	_shipModel = OBJLoader::Get().LoadOBJModelByName("ship_dps");
-	_shipModel->PrepareD3DComponents(_renderer->GetDevice());
+	_shipModel = std::make_unique<Model>("ship_dps", _renderer->GetDevice());
+	
 }
 
 Game::~Game(){}

@@ -14,20 +14,11 @@
 #include <string>
 #include <vector>
 
-// Forward declare friend
-class OBJLoader;
-class Game;
-
 class Model
 {
-	friend class OBJLoader;
-	friend class Game;
-
 public:
+	Model(const std::string& modelName, comptr<ID3D11Device> device);
 	virtual ~Model();
-
-	// To be called after the model has been loaded to prepare it for rendering
-	void PrepareD3DComponents(comptr<ID3D11Device> device);
 
 	const XMMATRIX CalculateWorldMatrix() const;
 
@@ -35,21 +26,22 @@ public:
 	math::Transform& GetTransform();
 
 	UINT GetIndexCount() const;
-	const std::vector<Vertex>& GetVertexData() const;
+	
 	comptr<ID3D11Buffer> GetVertexBuffer() const;
 	comptr<ID3D11Buffer> GetIndexBuffer() const;
 	comptr<ID3D11ShaderResourceView> GetTexture() const;
 
 protected:
-	Model(const std::string& modelName, const std::vector<Vertex>& rawVertexData, const std::vector<UINT>& rawIndexData);
-
-	void LoadBuffers(comptr<ID3D11Device> device);
-	void LoadTexture(comptr<ID3D11Device> device);
+	virtual void LoadModelComponents(comptr<ID3D11Device> device);
+	virtual void LoadModelData(comptr<ID3D11Device> device);
+	virtual void LoadTexture(comptr<ID3D11Device> device);
+	virtual void LoadBuffers(comptr<ID3D11Device> device);
 
 public:
 	static const std::string MODEL_DIRECTORY_PATH;
 	static const std::string MODEL_TEXTURE_EXT;
-
+	static const std::string MODEL_OBJDATA_EXT;
+	
 protected:
 	const std::string _name;
 

@@ -60,9 +60,6 @@
     <ClCompile Include="rendering\models\model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="rendering\models\uimodel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="rendering\textureloader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -117,9 +114,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="rendering\models\model.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rendering\models\uimodel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="rendering\textureloader.h">

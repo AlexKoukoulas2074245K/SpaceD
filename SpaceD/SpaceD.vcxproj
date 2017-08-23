@@ -139,10 +139,6 @@
       <SubType>
       </SubType>
     </ClCompile>
-    <ClCompile Include="rendering\models\uimodel.cpp">
-      <SubType>
-      </SubType>
-    </ClCompile>
     <ClCompile Include="rendering\objloader.cpp">
       <SubType>
       </SubType>
@@ -204,10 +200,6 @@
       </SubType>
     </ClInclude>
     <ClInclude Include="rendering\models\model.h">
-      <SubType>
-      </SubType>
-    </ClInclude>
-    <ClInclude Include="rendering\models\uimodel.h">
       <SubType>
       </SubType>
     </ClInclude>

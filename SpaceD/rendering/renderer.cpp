@@ -10,6 +10,7 @@
 #include "renderingcontext.h"
 #include "shaders/default3dshader.h"
 #include "shaders/default3dwithlightingshader.h"
+#include "shaders/defaultuishader.h"
 #include "../util/clientwindow.h"
 #include "models/model.h"
 
@@ -90,5 +91,6 @@ void Renderer::LoadShaders()
 	_shaders.resize(Shader::ShaderType::SHADER_COUNT);
 	_shaders[Shader::ShaderType::DEFAULT_3D] = std::move(std::unique_ptr<Shader>(new Default3dShader(_renderingContext->_device)));
 	_shaders[Shader::ShaderType::DEFAULT_3D_WITH_LIGHTING] = std::move(std::unique_ptr<Shader>(new Default3dWithLightingShader(_renderingContext->_device)));
+	_shaders[Shader::ShaderType::DEFAULT_3D] = std::move(std::unique_ptr<Shader>(new DefaultUiShader(_renderingContext->_device)));
 	
 }

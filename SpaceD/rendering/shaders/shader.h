@@ -18,7 +18,8 @@ public:
 	{
 		DEFAULT_3D = 0,
 		DEFAULT_3D_WITH_LIGHTING = 1,
-		SHADER_COUNT = 2
+		DEFAULT_UI = 2,
+		SHADER_COUNT = 3
 	};
 
 public:
