@@ -37,10 +37,13 @@ ClientWindow::ClientWindow(HINSTANCE instance, WNDPROC wndProc, const std::strin
 	RECT rect = { 0, 0, width, height };
 	AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, false);
 
-	int w = rect.right - rect.left;
-    int h = rect.bottom - rect.top;
+	const auto w = rect.right - rect.left;
+    const auto h = rect.bottom - rect.top;
 
-	_handle = CreateWindow(_title.c_str(), _title.c_str(), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, w, h, 0, 0, instance, 0);
+	const auto x = (GetSystemMetrics(SM_CXSCREEN) - width) / 2;
+	const auto y = (GetSystemMetrics(SM_CYSCREEN) - height) / 2;
+
+	_handle = CreateWindow(_title.c_str(), _title.c_str(), WS_OVERLAPPEDWINDOW, x, y, w, h, 0, 0, instance, 0);
 
 	if (!_handle)
 	{

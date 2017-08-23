@@ -9,7 +9,7 @@
 #include "camera.h"
 #include "rendering/objloader.h"
 #include "rendering/renderer.h"
-#include "rendering/model.h"
+#include "rendering/models/model.h"
 #include "rendering/shaders/default3dwithlightingshader.h"
 #include "util/clientwindow.h"
 #include "util/gametimer.h"
@@ -41,13 +41,12 @@ Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, 
 	game = this;
 
 	_clientWindow = std::make_unique<ClientWindow>(hInstance, WndProc, clientName, clientWidth, clientHeight);
-	_renderer     = std::make_unique<Renderer>(*_clientWindow);
-	_objLoader    = std::make_unique<OBJLoader>();
+	_renderer     = std::make_unique<Renderer>(*_clientWindow);	
 	_inputHandler = std::make_unique<InputHandler>();	
 	_camera       = std::make_unique<Camera>();
 
-	_shipModel = _objLoader->LoadOBJModelByName("ship_dps");
-	_shipModel->prepareD3DComponents(_renderer->GetDevice());
+	_shipModel = OBJLoader::Get().LoadOBJModelByName("ship_dps");
+	_shipModel->PrepareD3DComponents(_renderer->GetDevice());
 }
 
 Game::~Game(){}
@@ -66,25 +65,23 @@ void Game::Run()
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
+		
+		_gameTimer->Tick();
+
+		if (!_paused)
+		{
+			CalculateFrameStats();
+
+			if (!_debugPrompt)
+			{
+				Update(_gameTimer->DeltaTime());
+			}
+			Render();
+			_inputHandler->OnFrameEnd();
+		}
 		else
 		{
-			_gameTimer->Tick();
-
-			if (!_paused)
-			{
-				CalculateFrameStats();
-
-				if (!_debugPrompt)
-				{
-					Update(_gameTimer->DeltaTime());
-				}
-				Render();
-				_inputHandler->OnFrameEnd();
-			}
-			else
-			{
-				Sleep(100);
-			}
+			Sleep(100);
 		}
 	}
 }
@@ -249,32 +246,12 @@ LRESULT Game::MsgProc(HWND handle, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		case WM_KEYDOWN:
 		{
-			switch (wParam)
-			{
-				case VK_LEFT:  _inputHandler->OnKeyDown(InputHandler::LEFT, lParam); break;
-				case VK_RIGHT: _inputHandler->OnKeyDown(InputHandler::RIGHT, lParam); break;
-				case VK_UP:    _inputHandler->OnKeyDown(InputHandler::UP, lParam); break;
-				case VK_DOWN:  _inputHandler->OnKeyDown(InputHandler::DOWN, lParam); break;
-				case 0x41:     _inputHandler->OnKeyDown(InputHandler::A, lParam); break;
-				case 0x44:     _inputHandler->OnKeyDown(InputHandler::D, lParam); break;
-				case 0x53:     _inputHandler->OnKeyDown(InputHandler::S, lParam); break;
-				case 0x57:     _inputHandler->OnKeyDown(InputHandler::W, lParam); break;
-			}
+			_inputHandler->OnKeyDown(wParam, lParam);
 		} break;
 
 		case WM_KEYUP:
 		{
-			switch (wParam)
-			{
-				case VK_LEFT:  _inputHandler->OnKeyUp(InputHandler::LEFT, lParam); break;
-				case VK_RIGHT: _inputHandler->OnKeyUp(InputHandler::RIGHT, lParam); break;
-				case VK_UP:    _inputHandler->OnKeyUp(InputHandler::UP, lParam); break;
-				case VK_DOWN:  _inputHandler->OnKeyUp(InputHandler::DOWN, lParam); break;
-				case 0x41:     _inputHandler->OnKeyUp(InputHandler::A, lParam); break;
-				case 0x44:     _inputHandler->OnKeyUp(InputHandler::D, lParam); break;
-				case 0x53:     _inputHandler->OnKeyUp(InputHandler::S, lParam); break;
-				case 0x57:     _inputHandler->OnKeyUp(InputHandler::W, lParam); break;
-			}
+			_inputHandler->OnKeyUp(wParam, lParam);
 		} break;
 	}
 
@@ -302,13 +279,7 @@ void Game::Render()
 {
 	_renderer->ClearViews();
 
-	// Extract transform and build xm matrices
-	const auto& modelTransform = _shipModel->GetTransform();
-
-	const auto scaleMatrix = XMMatrixScaling(modelTransform.scale.x, modelTransform.scale.y, modelTransform.scale.z);
-	const auto rotMatrix = XMMatrixRotationX(modelTransform.rotation.x) * XMMatrixRotationY(modelTransform.rotation.y) * XMMatrixRotationZ(modelTransform.rotation.z);
-	const auto transMatrix = XMMatrixTranslation(modelTransform.translation.x, modelTransform.translation.y, modelTransform.translation.z);
-	const auto world = scaleMatrix * rotMatrix * transMatrix;
+	const auto worldMatrix = _shipModel->CalculateWorldMatrix();
 
 	XMMATRIX viewMatrix;
 	_camera->CalculateViewMatrix(viewMatrix);
@@ -316,7 +287,7 @@ void Game::Render()
 	XMMATRIX projMatrix;
 	_camera->CalculateProjectionMatrix(*_clientWindow, projMatrix);
 
-	auto wvp = world * viewMatrix * projMatrix;
+	auto wvp = worldMatrix * viewMatrix * projMatrix;
 
 	Default3dWithLightingShader::ConstantBuffer cb;
 	cb.gEyePosW = _camera->GetPos();
@@ -331,8 +302,8 @@ void Game::Render()
 	cb.gDirLight.Specular = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
     cb.gDirLight.Direction = XMFLOAT3(0.0f, -0.707f, -0.707f);
 
-	cb.gWorld = world;
-	cb.gWorldInvTranspose = math::InverseTranspose(world);
+	cb.gWorld = worldMatrix;
+	cb.gWorldInvTranspose = math::InverseTranspose(worldMatrix);
 	cb.gWorldViewProj = wvp;
 
 	_renderer->RenderModel(*_shipModel, &cb);

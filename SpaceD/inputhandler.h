@@ -52,8 +52,8 @@ public:
 	void OnMouseDown(const Button button, LPARAM lParam);
 	void OnMouseUp(const Button button, LPARAM lParam);
 
-	void OnKeyDown(const Key key, LPARAM lParam);
-	void OnKeyUp(const Key key, LPARAM lParam);
+	void OnKeyDown(WPARAM wParam, LPARAM lParam);
+	void OnKeyUp(WPARAM wParam, LPARAM lParam);
 
 	void OnMouseMove(WPARAM wParam, LPARAM lParam);
 	void OnMouseWheelMove(WPARAM wParam, LPARAM lParam);
@@ -68,4 +68,6 @@ private:
 
 	POINT _mousePos;
 	MouseWheelState _mouseWheelState;
+
+	std::unordered_map<UINT, UINT> _winVkDictionary;
 };

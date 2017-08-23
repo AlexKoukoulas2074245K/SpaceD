@@ -6,9 +6,9 @@
 #pragma once
 
 // Local Headers
-#include "d3dcommon.h"
-#include "vertex.h"
-#include "../util/math.h"
+#include "../d3dcommon.h"
+#include "../vertex.h"
+#include "../../util/math.h"
 
 // Remote Headers
 #include <string>
@@ -26,19 +26,22 @@ class Model
 public:
 	virtual ~Model();
 
-	void prepareD3DComponents(comptr<ID3D11Device> device);
+	// To be called after the model has been loaded to prepare it for rendering
+	void PrepareD3DComponents(comptr<ID3D11Device> device);
+
+	const XMMATRIX CalculateWorldMatrix() const;
 
 	const math::Transform& GetTransform() const;
 	math::Transform& GetTransform();
 
 	UINT GetIndexCount() const;
-	
+	const std::vector<Vertex>& GetVertexData() const;
 	comptr<ID3D11Buffer> GetVertexBuffer() const;
 	comptr<ID3D11Buffer> GetIndexBuffer() const;
 	comptr<ID3D11ShaderResourceView> GetTexture() const;
 
-private:
-	Model(const std::string& modelName, std::vector<Vertex>& rawVertexData, const std::vector<UINT>& rawIndexData);
+protected:
+	Model(const std::string& modelName, const std::vector<Vertex>& rawVertexData, const std::vector<UINT>& rawIndexData);
 
 	void LoadBuffers(comptr<ID3D11Device> device);
 	void LoadTexture(comptr<ID3D11Device> device);

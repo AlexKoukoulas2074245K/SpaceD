@@ -18,6 +18,14 @@ InputHandler::InputHandler()
 	, _mousePos()
 	, _mouseWheelState(MouseWheelState::NEUTRAL)
 {
+	_winVkDictionary[VK_LEFT]  = Key::LEFT;
+	_winVkDictionary[VK_RIGHT] = Key::RIGHT;
+	_winVkDictionary[VK_UP]    = Key::UP;
+	_winVkDictionary[VK_DOWN]  = Key::DOWN;
+	_winVkDictionary[0x41]     = Key::A;
+	_winVkDictionary[0x44]     = Key::D;
+	_winVkDictionary[0x53]     = Key::S;
+	_winVkDictionary[0x57]     = Key::W;
 }
 
 InputHandler::~InputHandler()
@@ -79,14 +87,14 @@ void InputHandler::OnMouseUp(const Button button, LPARAM lParam)
 	_mousePos.y = GET_Y_LPARAM(lParam);
 }
 
-void InputHandler::OnKeyDown(const InputHandler::Key key, LPARAM lParam)
+void InputHandler::OnKeyDown(WPARAM wParam, LPARAM lParam)
 {
-	_keyCurrentState |= key;
+	_keyCurrentState |= _winVkDictionary[wParam];
 }
 
-void InputHandler::OnKeyUp(const Key key, LPARAM lParam)
+void InputHandler::OnKeyUp(WPARAM wParam, LPARAM lParam)
 {
-	_keyCurrentState ^= key;
+	_keyCurrentState ^= _winVkDictionary[wParam];
 }
 
 void InputHandler::OnMouseMove(WPARAM wParam, LPARAM lParam)

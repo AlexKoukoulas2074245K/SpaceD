@@ -135,7 +135,11 @@
       <SubType>
       </SubType>
     </ClCompile>
-    <ClCompile Include="rendering\model.cpp">
+    <ClCompile Include="rendering\models\model.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
+    <ClCompile Include="rendering\models\uimodel.cpp">
       <SubType>
       </SubType>
     </ClCompile>
@@ -159,7 +163,15 @@
       <SubType>
       </SubType>
     </ClCompile>
+    <ClCompile Include="rendering\shaders\defaultuishader.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
     <ClCompile Include="rendering\shaders\shader.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
+    <ClCompile Include="rendering\textureloader.cpp">
       <SubType>
       </SubType>
     </ClCompile>
@@ -191,7 +203,11 @@
       <SubType>
       </SubType>
     </ClInclude>
-    <ClInclude Include="rendering\model.h">
+    <ClInclude Include="rendering\models\model.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
+    <ClInclude Include="rendering\models\uimodel.h">
       <SubType>
       </SubType>
     </ClInclude>
@@ -211,7 +227,15 @@
       <SubType>
       </SubType>
     </ClInclude>
+    <ClInclude Include="rendering\shaders\defaultuishader.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
     <ClInclude Include="rendering\shaders\shader.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
+    <ClInclude Include="rendering\textureloader.h">
       <SubType>
       </SubType>
     </ClInclude>

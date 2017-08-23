@@ -5,8 +5,7 @@
 
 // Local Headers
 #include "objloader.h"
-#include "model.h"
-#include "vertex.h"
+#include "models/model.h"
 #include "../util/stringutils.h"
 
 // Remote Headers
@@ -30,12 +29,17 @@ struct OBJIndex
 	}
 };
 
-OBJLoader::OBJLoader()
+OBJLoader& OBJLoader::Get()
 {
-	_objModels.clear();
+	static OBJLoader instance;
+	return instance;
 }
 
 OBJLoader::~OBJLoader()
+{
+}
+
+OBJLoader::OBJLoader()
 {
 }
 

@@ -5,6 +5,7 @@
 
 // Local Headers
 #include "model.h"
+#include "../textureloader.h"
 
 // Remote Headers
 #include <d3dx11.h>
@@ -17,7 +18,7 @@
 const std::string Model::MODEL_DIRECTORY_PATH = "../res/models/";
 const std::string Model::MODEL_TEXTURE_EXT    = ".png";
 
-Model::Model(const std::string& modelName, std::vector<Vertex>& rawVertexData, const std::vector<UINT>& rawIndexData)
+Model::Model(const std::string& modelName, const std::vector<Vertex>& rawVertexData, const std::vector<UINT>& rawIndexData)
 	: _name(modelName)
 	, _texture(0)
 	, _vertexBuffer(0)
@@ -33,10 +34,18 @@ Model::~Model()
 	OutputDebugString((std::string("Deleting model: ") + _name + "\n").c_str()); 
 }
 
-void Model::prepareD3DComponents(comptr<ID3D11Device> device)
+void Model::PrepareD3DComponents(comptr<ID3D11Device> device)
 {
 	LoadBuffers(device);
 	LoadTexture(device);
+}
+
+const XMMATRIX Model::CalculateWorldMatrix() const
+{
+	const auto scaleMatrix = XMMatrixScaling(_transform.scale.x, _transform.scale.y, _transform.scale.z);
+	const auto rotMatrix = XMMatrixRotationX(_transform.rotation.x) * XMMatrixRotationY(_transform.rotation.y) * XMMatrixRotationZ(_transform.rotation.z);
+	const auto transMatrix = XMMatrixTranslation(_transform.translation.x, _transform.translation.y, _transform.translation.z);
+	return scaleMatrix * rotMatrix * transMatrix;
 }
 
 const math::Transform& Model::GetTransform() const
@@ -109,5 +118,5 @@ void Model::LoadBuffers(comptr<ID3D11Device> device)
 
 void Model::LoadTexture(comptr<ID3D11Device> device)
 {
-	HR(D3DX11CreateShaderResourceViewFromFile(device.Get(), (MODEL_DIRECTORY_PATH + _name + "/" + _name + MODEL_TEXTURE_EXT).c_str(), 0, 0, &_texture, 0));
+	_texture = TextureLoader::Get().LoadTexture(MODEL_DIRECTORY_PATH + _name + "/" + _name + MODEL_TEXTURE_EXT, device);
 }

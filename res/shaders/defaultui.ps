@@ -1,0 +1,23 @@
+/*************************************************************************************/
+/** defaultui.ps by Alex Koukoulas (C) 2017 All Rights Reserved                     **/
+/** File Description:                                                               **/
+/*************************************************************************************/
+
+Texture2D resource;
+SamplerState ss;
+
+cbuffer cbPerObject
+{
+	float4x4 gWorld;	
+}; 
+
+struct VertexOut
+{
+	float4 PosW    : SV_POSITION;    
+    float2 texcoord : TEXCOORD0;	
+};
+
+float4 PS(VertexOut pin) : SV_Target
+{		
+	return resource.Sample(ss, pin.texcoord);
+}

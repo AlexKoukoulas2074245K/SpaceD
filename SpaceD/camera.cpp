@@ -9,6 +9,7 @@
 #include "camera.h"
 #include "util/clientwindow.h"
 #include <D3DX11.h>
+
 // Remote Headers
 #include <cmath>
 

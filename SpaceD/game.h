@@ -17,7 +17,6 @@ class InputHandler;
 class ClientWindow;
 class GameTimer;
 class Renderer;
-class OBJLoader;
 class Model;
 class Camera;
 
@@ -41,8 +40,7 @@ private:
 	std::unique_ptr<InputHandler> _inputHandler;
     std::unique_ptr<ClientWindow> _clientWindow;
 	std::unique_ptr<GameTimer> _gameTimer;
-	std::unique_ptr<Renderer> _renderer;
-	std::unique_ptr<OBJLoader> _objLoader;
+	std::unique_ptr<Renderer> _renderer;	
 	std::unique_ptr<Camera> _camera;
 	std::shared_ptr<Model> _shipModel;
 	

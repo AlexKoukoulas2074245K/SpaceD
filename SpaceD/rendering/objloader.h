@@ -18,12 +18,16 @@ class Model;
 class OBJLoader final
 {
 public:
-	OBJLoader();
+	static OBJLoader& Get();
 	~OBJLoader();
 
 	std::shared_ptr<Model> LoadOBJModelByName(const std::string& modelName);
 
 private:
+	OBJLoader();
+	OBJLoader(const OBJLoader& rhs) = delete;
+	OBJLoader& operator = (const OBJLoader& rhs) = delete;
+
 	std::shared_ptr<Model> LoadOBJModel(const std::string& modelName, const std::string& fullModelPath);
 
 private:

@@ -11,7 +11,7 @@
 #include "shaders/default3dshader.h"
 #include "shaders/default3dwithlightingshader.h"
 #include "../util/clientwindow.h"
-#include "model.h"
+#include "models/model.h"
 
 // Remote Headers
 

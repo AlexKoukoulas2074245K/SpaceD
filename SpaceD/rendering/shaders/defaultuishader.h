@@ -1,5 +1,5 @@
 /***********************************************************************/
-/** default3dshader.h by Alex Koukoulas (C) 2017 All Rights Reserved  **/
+/** defaultuishader.h by Alex Koukoulas (C) 2017 All Rights Reserved  **/
 /** File Description:                                                 **/
 /***********************************************************************/
 
@@ -11,10 +11,7 @@
 
 // Remote Headers
 
-// Forward declare friends
-class Renderer;
-
-class Default3dShader: public Shader
+class DefaultUiShader: Shader
 {
 	friend class Renderer;
 
@@ -22,17 +19,14 @@ public:
 	struct ConstantBuffer
 	{
 		XMMATRIX gWorld;
-		XMMATRIX gWorldInvTranspose;
-		XMMATRIX gWorldViewProj;
 	};
 
 public:
-	~Default3dShader();
+	~DefaultUiShader();
 
 private:
-	Default3dShader(comptr<ID3D11Device> device);
+	DefaultUiShader(comptr<ID3D11Device> device);
 
 protected:
 	void PrepareConstantBuffersAndLayout(comptr<ID3D11Device> device) override;
-
 };

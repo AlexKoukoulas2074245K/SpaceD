@@ -40,4 +40,24 @@ namespace math
 		XMVECTOR det = XMMatrixDeterminant(A);
 		return XMMatrixTranspose(XMMatrixInverse(&det, A));
 	}
+
+	static bool lerp(const FLOAT current, const FLOAT target, const FLOAT dt, FLOAT& outResult)
+	{
+		float fdiff = target - current;
+		if (fdiff > dt) 
+		{
+			outResult += dt;
+			return false; 
+		}
+		else if (fdiff < -dt)
+		{
+			outResult -= dt; 
+			return false; 
+		}
+		else 
+		{
+			outResult = target; 
+		    return true;
+		}
+	}
 }
