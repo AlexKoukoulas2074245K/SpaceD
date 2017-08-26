@@ -7,6 +7,7 @@
 
 // Local Headers
 #include "d3dcommon.h"
+#include "../util/math.h"
 #include "shaders/shader.h"
 
 // Remote Headers
@@ -16,6 +17,7 @@
 // Forward declarations
 class RenderingContext;
 class ClientWindow;
+class FontEngine;
 class Model;
 
 class Renderer final
@@ -29,6 +31,7 @@ public:
 	void Present();
 
 	void SetShader(const Shader::ShaderType shader);
+	void RenderText(const std::string& text, const XMFLOAT2& pos, const XMFLOAT4& color);
 	void RenderModel(const Model& model, const void* constantBufferData);
 
 	comptr<ID3D11Device> GetDevice() const;
@@ -36,10 +39,13 @@ public:
 
 private:
 	void LoadShaders();
+	void LoadFonts();
 
 private:
+	std::unique_ptr<FontEngine> _fontEngine;
 	std::unique_ptr<RenderingContext> _renderingContext;
 	std::vector<std::unique_ptr<Shader>> _shaders;
 	Shader::ShaderType _activeShaderType;
+	ClientWindow& _clientWindow;
 
 };

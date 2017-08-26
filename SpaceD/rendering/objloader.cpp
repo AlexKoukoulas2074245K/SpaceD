@@ -40,6 +40,11 @@ OBJLoader::OBJLoader()
 
 std::shared_ptr<OBJLoader::ModelData> OBJLoader::LoadOBJData(const std::string& modelDataPath)
 {
+	return LoadOBJData(modelDataPath, std::vector<XMFLOAT2>());
+}
+
+std::shared_ptr<OBJLoader::ModelData> OBJLoader::LoadOBJData(const std::string& modelDataPath, const std::vector<XMFLOAT2> customTexcoords)
+{
 	// Model entry exists
 	if (_objModelData.count(modelDataPath))
 	{
@@ -69,6 +74,13 @@ std::shared_ptr<OBJLoader::ModelData> OBJLoader::LoadOBJData(const std::string& 
 	std::vector<XMFLOAT3> normalRawData;
 	std::vector<OBJIndex> indexData;
 
+	// Check whether custom tex coords were passed in
+	const auto customTexcoordsGiven = customTexcoords.size() > 0;
+	if (customTexcoordsGiven)
+	{
+		texRawData = customTexcoords;
+	}
+
 	// Begin parsing obj file
 	std::string line;
 	while (std::getline(fileStream, line))
@@ -86,7 +98,10 @@ std::shared_ptr<OBJLoader::ModelData> OBJLoader::LoadOBJData(const std::string& 
 			// Texcoord entry
 			if (line[1] == 't')
 			{
-				texRawData.emplace_back(std::stof(lineSplitBySpace[1]), 1 - std::stof(lineSplitBySpace[2]));
+				if (!customTexcoordsGiven)
+				{
+				    texRawData.emplace_back(std::stof(lineSplitBySpace[1]), 1 - std::stof(lineSplitBySpace[2]));
+				}
 			}
 			// Normal entry
 			else if (line[1] == 'n')

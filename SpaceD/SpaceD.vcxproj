@@ -135,7 +135,15 @@
       <SubType>
       </SubType>
     </ClCompile>
+    <ClCompile Include="rendering\fontengine.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
     <ClCompile Include="rendering\models\model.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
+    <ClCompile Include="rendering\models\glyphmodel.cpp">
       <SubType>
       </SubType>
     </ClCompile>
@@ -199,7 +207,15 @@
       <SubType>
       </SubType>
     </ClInclude>
+    <ClInclude Include="rendering\fontengine.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
     <ClInclude Include="rendering\models\model.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
+    <ClInclude Include="rendering\models\glyphmodel.h">
       <SubType>
       </SubType>
     </ClInclude>

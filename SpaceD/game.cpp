@@ -45,8 +45,8 @@ Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, 
 	_inputHandler = std::make_unique<InputHandler>();	
 	_camera       = std::make_unique<Camera>();
 
-	_shipModel = std::make_unique<Model>("ship_dps", _renderer->GetDevice());
-	
+	_shipModel = std::make_unique<Model>("ship_dps");
+	_shipModel->LoadModelComponents(_renderer->GetDevice());
 }
 
 Game::~Game(){}
@@ -307,6 +307,9 @@ void Game::Render()
 	cb.gWorldViewProj = wvp;
 
 	_renderer->RenderModel(*_shipModel, &cb);
+
+	_renderer->RenderText("Test", XMFLOAT2(-0.5f, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+	_renderer->RenderText("Wonderful Game this is!", XMFLOAT2(-0.5f, -0.3f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
 	_renderer->Present();
 }
 

@@ -17,23 +17,27 @@
 class Model
 {
 public:
-	Model(const std::string& modelName, comptr<ID3D11Device> device);
+	Model(const std::string& modelName);
 	virtual ~Model();
+
+	virtual void LoadModelComponents(comptr<ID3D11Device> device);
 
 	const XMMATRIX CalculateWorldMatrix() const;
 
 	const math::Transform& GetTransform() const;
 	math::Transform& GetTransform();
 
-	UINT GetIndexCount() const;
+	UINT GetIndexCount() const; 
 	
 	comptr<ID3D11Buffer> GetVertexBuffer() const;
 	comptr<ID3D11Buffer> GetIndexBuffer() const;
 	comptr<ID3D11ShaderResourceView> GetTexture() const;
 
-protected:
-	virtual void LoadModelComponents(comptr<ID3D11Device> device);
-	virtual void LoadModelData(comptr<ID3D11Device> device);
+	void SetTexture(comptr<ID3D11ShaderResourceView> texture);
+
+
+protected:	
+	virtual void LoadModelData();
 	virtual void LoadTexture(comptr<ID3D11Device> device);
 	virtual void LoadBuffers(comptr<ID3D11Device> device);
 

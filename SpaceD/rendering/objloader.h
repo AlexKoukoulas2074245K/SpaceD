@@ -35,6 +35,7 @@ public:
 	~OBJLoader();
 
 	std::shared_ptr<ModelData> LoadOBJData(const std::string& modelDataPath);
+	std::shared_ptr<ModelData> LoadOBJData(const std::string& modelDataPath, const std::vector<XMFLOAT2> customTexcoords);
 
 private:
 	OBJLoader();

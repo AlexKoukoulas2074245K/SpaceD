@@ -21,13 +21,12 @@ const std::string Model::MODEL_TEXTURE_EXT    = ".png";
 const std::string Model::MODEL_OBJDATA_EXT    = ".obj";
 
 
-Model::Model(const std::string& modelName, comptr<ID3D11Device> device)
+Model::Model(const std::string& modelName)
 	: _name(modelName)
 	, _texture(0)
 	, _vertexBuffer(0)
 	, _indexBuffer(0)
-{
-	LoadModelComponents(device);
+{	
 }
 
 Model::~Model()
@@ -73,14 +72,19 @@ comptr<ID3D11ShaderResourceView> Model::GetTexture() const
 	return _texture;
 }
 
+void Model::SetTexture(comptr<ID3D11ShaderResourceView> texture)
+{
+	_texture = texture;
+}
+
 void Model::LoadModelComponents(comptr<ID3D11Device> device)
 {
-    LoadModelData(device);	
+    LoadModelData();	
 	LoadTexture(device);
 	LoadBuffers(device);
 }
 
-void Model::LoadModelData(comptr<ID3D11Device> device)
+void Model::LoadModelData()
 {
 	const auto modelData = OBJLoader::Get().LoadOBJData(MODEL_DIRECTORY_PATH + _name + "/" + _name + MODEL_OBJDATA_EXT);
 	_rawVertexData = modelData->vertexData;

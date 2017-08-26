@@ -7,6 +7,7 @@
 
 // Local Headers
 #include "renderer.h"
+#include "fontengine.h"
 #include "renderingcontext.h"
 #include "shaders/default3dshader.h"
 #include "shaders/default3dwithlightingshader.h"
@@ -15,12 +16,15 @@
 #include "models/model.h"
 
 // Remote Headers
+#include <algorithm>
 
 Renderer::Renderer(ClientWindow& clientWindow)
-	: _renderingContext(new RenderingContext(clientWindow))
+	: _clientWindow(clientWindow)
+	, _renderingContext(new RenderingContext(clientWindow))
 	, _activeShaderType(Shader::ShaderType::DEFAULT_3D_WITH_LIGHTING)
 {
 	LoadShaders();
+	LoadFonts();
 }
 
 Renderer::~Renderer()
@@ -47,6 +51,45 @@ void Renderer::Present()
 void Renderer::SetShader(const Shader::ShaderType shader)
 {
 	_activeShaderType = shader;
+}
+
+void Renderer::RenderText(const std::string& text, const XMFLOAT2& pos, const XMFLOAT4& color)
+{
+	std::string upperText(text);
+	std::transform(text.begin(), text.end(), upperText.begin(), ::toupper);
+
+	const auto currentShader = _activeShaderType;
+    SetShader(Shader::ShaderType::DEFAULT_UI);
+	
+	const auto glyphSize = _fontEngine->GetSize() * _clientWindow.GetAspectRatio();
+
+	DefaultUiShader::ConstantBuffer cb;
+	cb.gColor = color;
+	cb.gColorEnabled = 1;
+
+	XMFLOAT2 posCounter(pos);
+
+	for (auto i = 0U; i < upperText.size(); ++i)
+	{
+		if (upperText[i] == ' ')
+		{
+			posCounter.x += glyphSize;
+			continue;
+		}
+		posCounter.x += glyphSize * 2;
+
+		const auto letter = std::string(1, upperText[i]);
+		auto glyph  = _fontEngine->GetGlyph(letter);
+		
+		glyph.GetTransform().translation.x = posCounter.x;
+		glyph.GetTransform().translation.y = posCounter.y;
+		glyph.GetTransform().scale = XMFLOAT3(glyphSize, glyphSize, glyphSize);
+		cb.gWorld = glyph.CalculateWorldMatrix();
+		
+		RenderModel(glyph, &cb);
+	}
+
+	SetShader(currentShader);
 }
 
 void Renderer::RenderModel(const Model& model, const void* constantBufferData)
@@ -91,6 +134,11 @@ void Renderer::LoadShaders()
 	_shaders.resize(Shader::ShaderType::SHADER_COUNT);
 	_shaders[Shader::ShaderType::DEFAULT_3D] = std::move(std::unique_ptr<Shader>(new Default3dShader(_renderingContext->_device)));
 	_shaders[Shader::ShaderType::DEFAULT_3D_WITH_LIGHTING] = std::move(std::unique_ptr<Shader>(new Default3dWithLightingShader(_renderingContext->_device)));
-	_shaders[Shader::ShaderType::DEFAULT_3D] = std::move(std::unique_ptr<Shader>(new DefaultUiShader(_renderingContext->_device)));
+	_shaders[Shader::ShaderType::DEFAULT_UI] = std::move(std::unique_ptr<Shader>(new DefaultUiShader(_renderingContext->_device)));
 	
+}
+
+void Renderer::LoadFonts()
+{
+	_fontEngine = std::make_unique<FontEngine>("orena", _renderingContext->_device);
 }

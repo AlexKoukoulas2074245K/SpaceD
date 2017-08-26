@@ -8,16 +8,23 @@ SamplerState ss;
 
 cbuffer cbPerObject
 {
-	float4x4 gWorld;	
+	float4x4 gWorld;
+    float4   gColor;	
+	int      gColorEnabled;
+	float3   gPadding;
 }; 
 
 struct VertexOut
 {
-	float4 PosW    : SV_POSITION;    
-    float2 texcoord : TEXCOORD0;	
+	float4 PosH    : SV_POSITION;
+    float3 PosW    : POSITION;
+    float2 texcoord : TEXCOORD0;
+	float3 NormalW : NORMAL;
 };
 
 float4 PS(VertexOut pin) : SV_Target
 {		
-	return resource.Sample(ss, pin.texcoord);
+	float4 sampledColor = resource.Sample(ss, pin.texcoord);
+	if (sampledColor.a < 0.8f || !gColorEnabled) return sampledColor;
+	return sampledColor + gColor;
 }

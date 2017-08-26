@@ -19,6 +19,9 @@ public:
 	struct ConstantBuffer
 	{
 		XMMATRIX gWorld;
+		XMFLOAT4 gColor;
+		INT      gColorEnabled;
+		XMFLOAT3 gPadding;
 	};
 
 public:
