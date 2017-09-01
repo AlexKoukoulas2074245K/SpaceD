@@ -82,6 +82,13 @@ std::shared_ptr<OBJLoader::ModelData> OBJLoader::LoadOBJData(const std::string& 
 	}
 
 	// Begin parsing obj file
+	FLOAT minX = 0.0f;
+	FLOAT maxX = 0.0f;
+	FLOAT minY = 0.0f;
+	FLOAT maxY = 0.0f;
+	FLOAT minZ = 0.0f;
+	FLOAT maxZ = 0.0f;
+	
 	std::string line;
 	while (std::getline(fileStream, line))
 	{
@@ -111,7 +118,18 @@ std::shared_ptr<OBJLoader::ModelData> OBJLoader::LoadOBJData(const std::string& 
 			// Position entry
 			else
 			{
-				posRawData.emplace_back(std::stof(lineSplitBySpace[1]), std::stof(lineSplitBySpace[2]), std::stof(lineSplitBySpace[3]));
+				const auto x = std::stof(lineSplitBySpace[1]);
+				const auto y = std::stof(lineSplitBySpace[2]);
+				const auto z = std::stof(lineSplitBySpace[3]);
+
+				if (x < minX) minX = x;
+				if (x > maxX) maxX = x;
+				if (y < minY) minY = y;
+				if (y > maxY) maxY = y;
+				if (z < minZ) minZ = z;
+				if (z > maxZ) maxZ = z;
+
+				posRawData.emplace_back(x, y, z);
 			}
 		}
 		else if (line[0] == 'f')
@@ -148,8 +166,11 @@ std::shared_ptr<OBJLoader::ModelData> OBJLoader::LoadOBJData(const std::string& 
 		finalIndexData.push_back(i);
 	}
 
+	// Calculate model dimensions
+	math::Dimensions dimensions(math::absf(maxX, minX), math::absf(maxY, minY), math::absf(maxZ, minZ));
+
 	// Can't use make shared with private constructors (even if OBJLoader is Model's friend)
-	auto loadedModelData = std::make_shared<OBJLoader::ModelData>(finalVertexData, finalIndexData);
+	auto loadedModelData = std::make_shared<OBJLoader::ModelData>(finalVertexData, finalIndexData, dimensions);
 	_objModelData[modelDataPath] = loadedModelData;
 
 	return loadedModelData;

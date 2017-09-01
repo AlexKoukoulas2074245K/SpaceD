@@ -20,6 +20,7 @@ const std::string Model::MODEL_DIRECTORY_PATH = "../res/models/";
 const std::string Model::MODEL_TEXTURE_EXT    = ".png";
 const std::string Model::MODEL_OBJDATA_EXT    = ".obj";
 
+static UINT modelCount = 0;
 
 Model::Model(const std::string& modelName)
 	: _name(modelName)
@@ -31,7 +32,8 @@ Model::Model(const std::string& modelName)
 
 Model::~Model()
 {
-	OutputDebugString((std::string("Deleting model: ") + _name + "\n").c_str()); 
+	OutputDebugString((std::string("Deleting model: ") + _name + " model count: " + std::to_string(modelCount) + "\n").c_str()); 
+	modelCount++;
 }
 
 const XMMATRIX Model::CalculateWorldMatrix() const
@@ -89,6 +91,7 @@ void Model::LoadModelData()
 	const auto modelData = OBJLoader::Get().LoadOBJData(MODEL_DIRECTORY_PATH + _name + "/" + _name + MODEL_OBJDATA_EXT);
 	_rawVertexData = modelData->vertexData;
 	_rawIndexData = modelData->indexData;
+	_dimensions = modelData->dimensions;
 }
 
 void Model::LoadTexture(comptr<ID3D11Device> device)

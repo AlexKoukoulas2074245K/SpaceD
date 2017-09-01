@@ -12,10 +12,13 @@
 // Remote Headers
 
 class ClientWindow;
+class Game;
 
 class Camera
 {
 public:
+	friend class Game;
+
 	enum Direction
 	{
 		FORWARD, BACKWARD, LEFT, RIGHT, UP, DOWN
@@ -33,7 +36,7 @@ public:
 	void CalculateProjectionMatrix(const ClientWindow& clientWindow, XMMATRIX& outProjMatrix) const;
 
 	const XMFLOAT3& GetPos() const;
-
+	
 private:
 	static const XMFLOAT3 DEFAULT_FORWARD;
 	static const XMFLOAT3 DEFAULT_UP;

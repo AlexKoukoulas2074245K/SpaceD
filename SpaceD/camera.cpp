@@ -22,12 +22,12 @@ const FLOAT Camera::DEFAULT_ZNEAR(1.0f);
 const FLOAT Camera::DEFAULT_ZFAR(1000.0f);
 
 Camera::Camera()
-	: _pos(0.0f, 0.0f, 10.0f)
+	: _pos(0.0f, 90.0f, -20.0f)
 	, _forward(Camera::DEFAULT_FORWARD)
 	, _right(Camera::DEFAULT_RIGHT)
 	, _up(Camera::DEFAULT_UP)
 	, _yaw(0.0f)
-	, _pitch(0.0f)
+	, _pitch(-math::PI/2.0f)
 	, _roll(0.0f)
 {
 

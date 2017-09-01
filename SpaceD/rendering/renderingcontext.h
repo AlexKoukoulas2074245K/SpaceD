@@ -29,7 +29,8 @@ private:
 	
 	void InitD3D();
 	void OnResize();
-	
+	void SetWireframe(const bool wireframe);
+
 private:
 	comptr<ID3D11Device> _device;
 	comptr<ID3D11DeviceContext> _deviceContext;

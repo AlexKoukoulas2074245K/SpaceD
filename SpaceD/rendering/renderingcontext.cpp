@@ -92,6 +92,11 @@ void RenderingContext::OnResize()
 	_deviceContext->RSSetViewports(1, &_screenViewport);
 }
 
+void RenderingContext::SetWireframe(const bool wireframe)
+{
+	_deviceContext->RSSetState(wireframe ? _wireframeRastState.Get(): _defaultRastState.Get());
+}
+
 void RenderingContext::InitD3D()
 {
 	UINT deviceFlags = 0;

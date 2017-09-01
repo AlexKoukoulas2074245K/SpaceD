@@ -15,7 +15,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
 {
 	//TODO change to config values
 	auto clientWidth   = 800;
-	auto clientHeight  = 800;
+	auto clientHeight  = 900;
 	auto clientName = "Space-D";
 	
 	Game game(hInstance, clientName, clientWidth, clientHeight);

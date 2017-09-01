@@ -25,6 +25,7 @@ Renderer::Renderer(ClientWindow& clientWindow)
 {
 	LoadShaders();
 	LoadFonts();
+	LoadDebugAssets();
 }
 
 Renderer::~Renderer()
@@ -53,6 +54,16 @@ void Renderer::SetShader(const Shader::ShaderType shader)
 	_activeShaderType = shader;
 }
 
+void Renderer::RenderText(const FLOAT text, const XMFLOAT2& pos, const XMFLOAT4& color)
+{
+	RenderText(std::to_string(text), pos, color);
+}
+
+void Renderer::RenderText(const INT text, const XMFLOAT2& pos, const XMFLOAT4& color)
+{
+	RenderText(std::to_string(text), pos, color);
+}
+
 void Renderer::RenderText(const std::string& text, const XMFLOAT2& pos, const XMFLOAT4& color)
 {
 	std::string upperText(text);
@@ -79,7 +90,7 @@ void Renderer::RenderText(const std::string& text, const XMFLOAT2& pos, const XM
 		posCounter.x += glyphSize * 2;
 
 		const auto letter = std::string(1, upperText[i]);
-		auto glyph  = _fontEngine->GetGlyph(letter);
+		auto& glyph  = _fontEngine->GetGlyph(letter);
 		
 		glyph.GetTransform().translation.x = posCounter.x;
 		glyph.GetTransform().translation.y = posCounter.y;
@@ -118,6 +129,25 @@ void Renderer::RenderModel(const Model& model, const void* constantBufferData)
 	_renderingContext->_deviceContext->DrawIndexed(model.GetIndexCount(), 0, 0);
 }
 
+void Renderer::RenderDebugSphere(const XMFLOAT3& pos, const XMFLOAT3& scale, const XMMATRIX& viewMatrix, const XMMATRIX& projMatrix)
+{
+	const auto currentShader = _activeShaderType;
+	SetShader(Shader::ShaderType::DEFAULT_3D);
+	
+	_debugSphereModel->GetTransform().translation = pos;
+	_debugSphereModel->GetTransform().scale = scale;
+
+	Default3dShader::ConstantBuffer cb;
+	cb.gWorld = _debugSphereModel->CalculateWorldMatrix();
+	cb.gWorldInvTranspose = math::InverseTranspose(cb.gWorld);
+	cb.gWorldViewProj = cb.gWorld * viewMatrix * projMatrix;
+
+	_renderingContext->SetWireframe(true);
+	RenderModel(*_debugSphereModel, &cb);
+	_renderingContext->SetWireframe(false);
+	SetShader(currentShader);
+}
+
 comptr<ID3D11Device> Renderer::GetDevice() const
 {
 	return _renderingContext->_device;
@@ -135,10 +165,15 @@ void Renderer::LoadShaders()
 	_shaders[Shader::ShaderType::DEFAULT_3D] = std::move(std::unique_ptr<Shader>(new Default3dShader(_renderingContext->_device)));
 	_shaders[Shader::ShaderType::DEFAULT_3D_WITH_LIGHTING] = std::move(std::unique_ptr<Shader>(new Default3dWithLightingShader(_renderingContext->_device)));
 	_shaders[Shader::ShaderType::DEFAULT_UI] = std::move(std::unique_ptr<Shader>(new DefaultUiShader(_renderingContext->_device)));
-	
 }
 
 void Renderer::LoadFonts()
 {
 	_fontEngine = std::make_unique<FontEngine>("orena", _renderingContext->_device);
+}
+
+void Renderer::LoadDebugAssets()
+{
+	_debugSphereModel = std::make_unique<Model>("debug_sphere");
+	_debugSphereModel->LoadModelComponents(_renderingContext->_device);
 }

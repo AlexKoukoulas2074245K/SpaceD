@@ -24,6 +24,8 @@ InputHandler::InputHandler()
 	_winVkDictionary[VK_DOWN]  = Key::DOWN;
 	_winVkDictionary[0x41]     = Key::A;
 	_winVkDictionary[0x44]     = Key::D;
+	_winVkDictionary[0x45]     = Key::E;
+	_winVkDictionary[0x51]     = Key::Q;
 	_winVkDictionary[0x53]     = Key::S;
 	_winVkDictionary[0x57]     = Key::W;
 }
@@ -33,42 +35,42 @@ InputHandler::~InputHandler()
 
 }
 
-bool InputHandler::isButtonDown(const InputHandler::Button button) const
+bool InputHandler::IsButtonDown(const InputHandler::Button button) const
 {
 	return (_buttonCurrentState & button) != 0;
 }
 
-bool InputHandler::isButtonUp(const InputHandler::Button button) const
+bool InputHandler::IsButtonUp(const InputHandler::Button button) const
 {
-	return !isButtonDown(button);
+	return !IsButtonDown(button);
 }
 
-bool InputHandler::isButtonTapped(const InputHandler::Button button) const
+bool InputHandler::IsButtonTapped(const InputHandler::Button button) const
 {
-	return isButtonDown(button) && (_buttonPreviousState & button) == 0;
+	return IsButtonDown(button) && (_buttonPreviousState & button) == 0;
 }
 
-bool InputHandler::isKeyDown(const InputHandler::Key key) const
+bool InputHandler::IsKeyDown(const InputHandler::Key key) const
 {
 	return (_keyCurrentState & key) != 0;
 }
 
-bool InputHandler::isKeyUp(const InputHandler::Key key) const
+bool InputHandler::IsKeyUp(const InputHandler::Key key) const
 {
-	return !isKeyDown(key);
+	return !IsKeyDown(key);
 }
 
-bool InputHandler::isKeyTapped(const InputHandler::Key key) const
+bool InputHandler::IsKeyTapped(const InputHandler::Key key) const
 {
-	return isKeyDown(key) && (_keyPreviousState & key) == 0;
+	return IsKeyDown(key) && (_keyPreviousState & key) == 0;
 }
 
-InputHandler::MouseWheelState InputHandler::getMouseWheelState() const
+InputHandler::MouseWheelState InputHandler::GetMouseWheelState() const
 {
 	return _mouseWheelState;
 }
 
-const POINT& InputHandler::getMousePos() const
+const POINT& InputHandler::GetMousePos() const
 {
 	return _mousePos;
 }

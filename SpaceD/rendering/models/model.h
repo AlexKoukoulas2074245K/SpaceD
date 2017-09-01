@@ -57,4 +57,5 @@ protected:
 	std::vector<UINT>   _rawIndexData;
 
 	math::Transform _transform;
+	math::Dimensions _dimensions;
 };

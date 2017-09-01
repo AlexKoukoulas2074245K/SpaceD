@@ -31,7 +31,10 @@ public:
 	void Present();
 
 	void SetShader(const Shader::ShaderType shader);
+	void RenderText(const FLOAT text, const XMFLOAT2& pos, const XMFLOAT4& color);
+	void RenderText(const INT text, const XMFLOAT2& pos, const XMFLOAT4& color);
 	void RenderText(const std::string& text, const XMFLOAT2& pos, const XMFLOAT4& color);
+	void RenderDebugSphere(const XMFLOAT3& pos, const XMFLOAT3& scale, const XMMATRIX& viewMatrix, const XMMATRIX& projMatrix);
 	void RenderModel(const Model& model, const void* constantBufferData);
 
 	comptr<ID3D11Device> GetDevice() const;
@@ -40,8 +43,10 @@ public:
 private:
 	void LoadShaders();
 	void LoadFonts();
+	void LoadDebugAssets();
 
 private:
+	std::unique_ptr<Model> _debugSphereModel;
 	std::unique_ptr<FontEngine> _fontEngine;
 	std::unique_ptr<RenderingContext> _renderingContext;
 	std::vector<std::unique_ptr<Shader>> _shaders;

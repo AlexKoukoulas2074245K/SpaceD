@@ -24,7 +24,7 @@ public:
 
 	enum Key
 	{
-		LEFT = 1, RIGHT = 2, UP = 4, DOWN = 8, W = 16, A = 32, S = 64, D = 128
+		LEFT = 1, RIGHT = 2, UP = 4, DOWN = 8, W = 16, A = 32, S = 64, D = 128, E = 256, Q = 512
 	};
 
 	enum MouseWheelState
@@ -37,16 +37,16 @@ public:
 	~InputHandler();
 
 	// Accessor Methods
-	bool isButtonDown(const Button button) const;
-	bool isButtonUp(const Button button) const;
-	bool isButtonTapped(const Button button) const;
+	bool IsButtonDown(const Button button) const;
+	bool IsButtonUp(const Button button) const;
+	bool IsButtonTapped(const Button button) const;
 
-	bool isKeyDown(const Key key) const;
-	bool isKeyUp(const Key key) const;
-	bool isKeyTapped(const Key key) const;
+	bool IsKeyDown(const Key key) const;
+	bool IsKeyUp(const Key key) const;
+	bool IsKeyTapped(const Key key) const;
 
-	MouseWheelState getMouseWheelState() const;
-	const POINT& getMousePos() const;
+	MouseWheelState GetMouseWheelState() const;
+	const POINT& GetMousePos() const;
 
 	// Update Methods
 	void OnMouseDown(const Button button, LPARAM lParam);

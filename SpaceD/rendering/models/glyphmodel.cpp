@@ -34,4 +34,5 @@ void GlyphModel::LoadModelData()
 	const auto modelData = OBJLoader::Get().LoadOBJData(MODEL_DIRECTORY_PATH + _name + "/" + _name + MODEL_OBJDATA_EXT, _glyphTexcoords);
 	_rawVertexData = modelData->vertexData;
 	_rawIndexData = modelData->indexData;
+	_dimensions = modelData->dimensions;
 }

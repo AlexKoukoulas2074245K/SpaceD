@@ -23,7 +23,7 @@ const std::string FontEngine::FONT_TEXTURE_EXT = ".png";
 
 FontEngine::FontEngine(const std::string& name, comptr<ID3D11Device> device)
 	: _name(name)
-	, _size(0.05f)
+	, _size(0.02f)
 {
 	LoadFont(name, device);
 }
