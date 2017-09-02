@@ -62,6 +62,16 @@ namespace math
 		XMFLOAT3 _direction;
 	};
 
+	struct Frustum
+	{
+		Frustum()
+		{
+			ZeroMemory(_planes, ARRAYSIZE(_planes));
+		}
+
+		XMVECTOR _planes[6];
+	};
+
 	static XMFLOAT2 MouseToNDC(const INT mouseX, const INT mouseY, const INT windowWidth, const INT windowHeight)
 	{
 		FLOAT pointX, pointY;

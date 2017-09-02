@@ -6,6 +6,7 @@
 #pragma once
 
 // Local Headers
+#include "camera.h"
 
 // Remote Headers
 #include <memory>
@@ -42,10 +43,12 @@ private:
     std::unique_ptr<ClientWindow> _clientWindow;
 	std::unique_ptr<GameTimer> _gameTimer;
 	std::unique_ptr<Renderer> _renderer;	
-	std::unique_ptr<Camera> _camera;
 	std::shared_ptr<Model> _shipModel;
 	std::shared_ptr<UIModel> _uiModel;
 	
+	// Stack allocated to avoid matrix misalignments
+	Camera _camera;
+
 	bool _debugPrompt;
 	bool _paused;
 	bool _minimized;

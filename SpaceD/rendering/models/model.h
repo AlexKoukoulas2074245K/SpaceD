@@ -27,6 +27,8 @@ public:
 	const math::Transform& GetTransform() const;
 	math::Transform& GetTransform();
 
+	const math::Dimensions& GetDimensions() const;
+
 	UINT GetIndexCount() const; 
 	
 	comptr<ID3D11Buffer> GetVertexBuffer() const;

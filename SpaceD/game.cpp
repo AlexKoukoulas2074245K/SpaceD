@@ -43,8 +43,7 @@ Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, 
 
 	_clientWindow = std::make_unique<ClientWindow>(hInstance, WndProc, clientName, clientWidth, clientHeight);
 	_renderer     = std::make_unique<Renderer>(*_clientWindow);	
-	_inputHandler = std::make_unique<InputHandler>();	
-	_camera       = std::make_unique<Camera>();
+	_inputHandler = std::make_unique<InputHandler>();		
 
 	_shipModel = std::make_unique<Model>("ship_dps");
 	_shipModel->LoadModelComponents(_renderer->GetDevice());
@@ -274,22 +273,22 @@ static float shipVelX;
 
 void Game::Update(const float deltaTime)
 {
-	if (_inputHandler->IsKeyDown(InputHandler::LEFT)) _camera->RotateCamera(Camera::LEFT, deltaTime * 4);
-	if (_inputHandler->IsKeyDown(InputHandler::RIGHT)) _camera->RotateCamera(Camera::RIGHT, deltaTime * 4);
-	if (_inputHandler->IsKeyDown(InputHandler::UP)) _camera->RotateCamera(Camera::UP, deltaTime * 4);
-	if (_inputHandler->IsKeyDown(InputHandler::DOWN)) _camera->RotateCamera(Camera::DOWN, deltaTime * 4);
-	if (_inputHandler->IsKeyDown(InputHandler::W)) _camera->MoveCamera(Camera::FORWARD, deltaTime * 4);
-	if (_inputHandler->IsKeyDown(InputHandler::A)) _camera->MoveCamera(Camera::LEFT, deltaTime * 4);
-	if (_inputHandler->IsKeyDown(InputHandler::S)) _camera->MoveCamera(Camera::BACKWARD, deltaTime * 4);
-	if (_inputHandler->IsKeyDown(InputHandler::D)) _camera->MoveCamera(Camera::RIGHT,  deltaTime* 4);
-	if (_inputHandler->IsKeyDown(InputHandler::Q)) _camera->MoveCamera(Camera::UP, deltaTime * 4);
-	if (_inputHandler->IsKeyDown(InputHandler::E)) _camera->MoveCamera(Camera::DOWN, deltaTime * 4);
+	if (_inputHandler->IsKeyDown(InputHandler::LEFT)) _camera.RotateCamera(Camera::LEFT, deltaTime * 4);
+	if (_inputHandler->IsKeyDown(InputHandler::RIGHT)) _camera.RotateCamera(Camera::RIGHT, deltaTime * 4);
+	if (_inputHandler->IsKeyDown(InputHandler::UP)) _camera.RotateCamera(Camera::UP, deltaTime * 4);
+	if (_inputHandler->IsKeyDown(InputHandler::DOWN)) _camera.RotateCamera(Camera::DOWN, deltaTime * 4);
+	if (_inputHandler->IsKeyDown(InputHandler::W)) _camera.MoveCamera(Camera::FORWARD, deltaTime * 4);
+	if (_inputHandler->IsKeyDown(InputHandler::A)) _camera.MoveCamera(Camera::LEFT, deltaTime * 4);
+	if (_inputHandler->IsKeyDown(InputHandler::S)) _camera.MoveCamera(Camera::BACKWARD, deltaTime * 4);
+	if (_inputHandler->IsKeyDown(InputHandler::D)) _camera.MoveCamera(Camera::RIGHT,  deltaTime* 4);
+	if (_inputHandler->IsKeyDown(InputHandler::Q)) _camera.MoveCamera(Camera::UP, deltaTime * 4);
+	if (_inputHandler->IsKeyDown(InputHandler::E)) _camera.MoveCamera(Camera::DOWN, deltaTime * 4);
 
-	XMMATRIX viewMatrix;
-	_camera->CalculateViewMatrix(viewMatrix);
+	_camera.CalculateViewAndProjection(*_clientWindow);
+	_camera.CalculateFrustum();
 
-	XMMATRIX projMatrix;
-	_camera->CalculateProjectionMatrix(*_clientWindow, projMatrix);
+	XMMATRIX viewMatrix = _camera.GetViewMatrix();
+	XMMATRIX projMatrix = _camera.GetProjectionMatrix();
 
 	XMFLOAT4 trans4(_shipModel->GetTransform().translation.x, _shipModel->GetTransform().translation.y, _shipModel->GetTransform().translation.z, 1.0f);
 	auto transVec = XMLoadFloat4(&trans4);
@@ -363,7 +362,6 @@ void Game::Update(const float deltaTime)
 			rotRight = false;
 		}
 	}
-	//_shipModel->GetTransform().rotation.y += deltaTime;	
 }
 
 void Game::Render()
@@ -372,16 +370,10 @@ void Game::Render()
 
 	const auto worldMatrix = _shipModel->CalculateWorldMatrix();
 
-	XMMATRIX viewMatrix;
-	_camera->CalculateViewMatrix(viewMatrix);
-
-	XMMATRIX projMatrix;
-	_camera->CalculateProjectionMatrix(*_clientWindow, projMatrix);
-
-	auto wvp = worldMatrix * viewMatrix * projMatrix;
+	auto wvp = worldMatrix * _camera.GetViewMatrix() * _camera.GetProjectionMatrix();
 
 	Default3dWithLightingShader::ConstantBuffer cb;
-	cb.gEyePosW = _camera->GetPos();
+	cb.gEyePosW = _camera.GetPos();
 	cb.gLightCount = 3;
 	
 	cb.gMaterial.Ambient = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
@@ -404,15 +396,21 @@ void Game::Render()
 	cb.gWorldInvTranspose = math::InverseTranspose(worldMatrix);
 	cb.gWorldViewProj = wvp;
 
-	_renderer->RenderModel(*_shipModel, &cb);
+	const auto spherePos = _shipModel->GetTransform().translation;
+	const auto sphereRad = _shipModel->GetDimensions()._width/2.0f;
+		
 	//_renderer->RenderDebugSphere(cb.gPointLight.Position, XMFLOAT3(4.0f, 4.0f, 4.0f), viewMatrix, projMatrix);
 	
-	_renderer->RenderText(shipVelX, XMFLOAT2(-1.0f, 0.95f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+	if (_camera.isVisible(spherePos, sphereRad))
+	{
+		_renderer->RenderModel(*_shipModel, &cb);
+	}
+	
 	//_renderer->RenderText(shipVelX, XMFLOAT2(-1.0f, 0.95f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 	//_renderer->RenderText(_shipModel->GetTransform().rotation.z, XMFLOAT2(-1.0f, 0.9f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 	
-	//_renderer->RenderText("Camera pos: " + std::to_string(_camera->_pos.x) + ", " + std::to_string(_camera->_pos.y) + ", " + std::to_string(_camera->_pos.z), XMFLOAT2(-1.0f, 0.95f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-	//_renderer->RenderText("Camera pyr: " + std::to_string(_camera->_pitch) + ", " + std::to_string(_camera->_yaw) + ", " + std::to_string(_camera->_roll), XMFLOAT2(-1.0f, 0.9f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+	//_renderer->RenderText("Camera pos: " + std::to_string(_camera._pos.x) + ", " + std::to_string(_camera._pos.y) + ", " + std::to_string(_camera._pos.z), XMFLOAT2(-1.0f, 0.95f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+	//_renderer->RenderText("Camera pyr: " + std::to_string(_camera._pitch) + ", " + std::to_string(_camera._yaw) + ", " + std::to_string(_camera._roll), XMFLOAT2(-1.0f, 0.9f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 	
 	_renderer->Present();
 }

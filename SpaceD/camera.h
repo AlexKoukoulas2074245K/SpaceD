@@ -32,8 +32,15 @@ public:
 	void RotateCamera(const Direction direction, const FLOAT amount);
 	void PanCamera(const Direction direction, const FLOAT amount);
 
-	void CalculateViewMatrix(XMMATRIX& outViewMatrix) const;
-	void CalculateProjectionMatrix(const ClientWindow& clientWindow, XMMATRIX& outProjMatrix) const;
+	bool isVisible(const XMFLOAT3& pos, const FLOAT rad);
+
+	// The calculation methods should be used before the accessors below 
+	void CalculateViewAndProjection(const ClientWindow& window);
+	void CalculateFrustum();
+
+	const XMMATRIX& GetViewMatrix() const;
+	const XMMATRIX& GetProjectionMatrix() const;
+	const math::Frustum& GetFrustum() const;
 
 	const XMFLOAT3& GetPos() const;
 	
@@ -54,4 +61,9 @@ private:
 	FLOAT _yaw;
 	FLOAT _pitch;
 	FLOAT _roll;
+
+	XMMATRIX _viewMatrix;
+	XMMATRIX _projMatrix;
+
+	math::Frustum _frustum;
 };

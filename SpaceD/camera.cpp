@@ -29,6 +29,8 @@ Camera::Camera()
 	, _yaw(0.0f)
 	, _pitch(-math::PI/2.0f)
 	, _roll(0.0f)
+	, _viewMatrix(XMMatrixIdentity())
+	, _projMatrix(XMMatrixIdentity())
 {
 
 }
@@ -132,9 +134,24 @@ void Camera::PanCamera(const Direction direction, const FLOAT amount)
 	}
 }
 
-void Camera::CalculateViewMatrix(XMMATRIX& outViewMatrix) const
-{	
+bool Camera::isVisible(const XMFLOAT3& pos, const FLOAT rad)
+{
+	const auto pos4D = XMFLOAT4(pos.x, pos.y, pos.z, 1.0f);
+	const auto posVec = XMLoadFloat4(&pos4D);
 
+	for (const auto& plane: _frustum._planes)
+	{
+		if (XMVectorGetX(XMPlaneDotCoord(plane, posVec)) < -rad)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+void Camera::CalculateViewAndProjection(const ClientWindow& window)
+{
 	auto up_vec = XMVectorSet(DEFAULT_UP.x, DEFAULT_UP.y, DEFAULT_UP.z, 1.0f);
 	auto forward_vec = XMVectorSet(DEFAULT_FORWARD.x, DEFAULT_FORWARD.y, DEFAULT_FORWARD.z, 1.0f);
 	auto right_vec = XMVectorSet(DEFAULT_RIGHT.x, DEFAULT_RIGHT.y, DEFAULT_RIGHT.z, 1.0f);
@@ -163,13 +180,109 @@ void Camera::CalculateViewMatrix(XMMATRIX& outViewMatrix) const
 	viewMatrix._21 = right.y;                                         viewMatrix._22 = up.y;                                         viewMatrix._23 = forward.y;                                         viewMatrix._24 = 0.0f;
 	viewMatrix._31 = right.z;                                         viewMatrix._32 = up.z;                                         viewMatrix._33 = forward.z;                                         viewMatrix._34 = 0.0f;
 	viewMatrix._41 = XMVectorGetX(-XMVector3Dot(right_vec, pos_vec)); viewMatrix._42 = XMVectorGetY(-XMVector3Dot(up_vec, pos_vec)); viewMatrix._43 = XMVectorGetZ(-XMVector3Dot(forward_vec, pos_vec)); viewMatrix._44 = 1.0f;
-	
-	outViewMatrix = XMLoadFloat4x4(&viewMatrix);
+
+	_viewMatrix = XMLoadFloat4x4(&viewMatrix);
+	_projMatrix = XMMatrixPerspectiveFovLH(DEFAULT_FOV, window.GetAspectRatio(), DEFAULT_ZNEAR, DEFAULT_ZFAR);
 }
 
-void Camera::CalculateProjectionMatrix(const ClientWindow& clientWindow, XMMATRIX& outProjMatrix) const
+void Camera::CalculateFrustum()
 {
-	outProjMatrix = XMMatrixPerspectiveFovLH(DEFAULT_FOV, clientWindow.GetAspectRatio(), DEFAULT_ZNEAR, DEFAULT_ZFAR);
+	const auto r = DEFAULT_ZFAR / (DEFAULT_ZFAR - DEFAULT_ZNEAR);
+	
+	auto projMatrix = _projMatrix;
+	auto viewMatrix = _viewMatrix;
+
+	projMatrix._33 = r;
+	projMatrix._43 = -r * DEFAULT_ZNEAR;
+
+	const auto viewproj = viewMatrix * projMatrix;
+
+	// Calculate near plane of frustum.
+	XMFLOAT4 nearPlane = {};
+	nearPlane.x = viewproj._14 + viewproj._13;
+	nearPlane.y = viewproj._24 + viewproj._23;
+	nearPlane.z = viewproj._34 + viewproj._33;
+	nearPlane.w = viewproj._44 + viewproj._43;
+
+	auto nearPlaneVec = XMLoadFloat4(&nearPlane);
+	nearPlaneVec = XMPlaneNormalize(nearPlaneVec);
+	
+	_frustum._planes[0] = nearPlaneVec;
+
+	// Calculate far plane of frustum.
+	XMFLOAT4 farPlane = {};
+	farPlane.x = viewproj._14 - viewproj._13;
+	farPlane.y = viewproj._24 - viewproj._23;
+	farPlane.z = viewproj._34 - viewproj._33;
+	farPlane.w = viewproj._44 - viewproj._43;
+
+	auto farPlaneVec = XMLoadFloat4(&farPlane);
+	farPlaneVec = XMPlaneNormalize(farPlaneVec);
+	
+	_frustum._planes[1] = farPlaneVec;
+
+	// Calculate left plane of frustum.
+	XMFLOAT4 leftPlane = {};
+	leftPlane.x = viewproj._14 + viewproj._11;
+	leftPlane.y = viewproj._24 + viewproj._21;
+	leftPlane.z = viewproj._34 + viewproj._31;
+	leftPlane.w = viewproj._44 + viewproj._41;
+
+	auto leftPlaneVec = XMLoadFloat4(&leftPlane);
+	leftPlaneVec = XMPlaneNormalize(leftPlaneVec);
+	
+	_frustum._planes[2] = leftPlaneVec;
+
+	// Calculate right plane of frustum.    
+	XMFLOAT4 rightPlane = {};
+	rightPlane.x = viewproj._14 - viewproj._11;
+	rightPlane.y = viewproj._24 - viewproj._21;
+	rightPlane.z = viewproj._34 - viewproj._31;
+	rightPlane.w = viewproj._44 - viewproj._41;
+
+	auto rightPlaneVec = XMLoadFloat4(&rightPlane);
+	rightPlaneVec = XMPlaneNormalize(rightPlaneVec);
+
+	_frustum._planes[3] = rightPlaneVec;
+
+	// Calculate top plane of frustum.    
+	XMFLOAT4 topPlane = {};
+	topPlane.x = viewproj._14 - viewproj._12;
+	topPlane.y = viewproj._24 - viewproj._22;
+	topPlane.z = viewproj._34 - viewproj._32;
+	topPlane.w = viewproj._44 - viewproj._42;
+
+	auto topPlaneVec = XMLoadFloat4(&topPlane);
+	topPlaneVec = XMPlaneNormalize(topPlaneVec);
+	
+	_frustum._planes[4] = topPlaneVec;
+
+	// Calculate bottom plane of frustum.
+	XMFLOAT4 botPlane = {};
+	botPlane.x = viewproj._14 + viewproj._12;
+	botPlane.y = viewproj._24 + viewproj._22;
+	botPlane.z = viewproj._34 + viewproj._32;
+	botPlane.w = viewproj._44 + viewproj._42;
+
+	auto botPlaneVec = XMLoadFloat4(&botPlane);
+	botPlaneVec = XMPlaneNormalize(botPlaneVec);
+
+	_frustum._planes[5] = botPlaneVec;
+}
+
+const XMMATRIX& Camera::GetViewMatrix() const
+{	
+	return _viewMatrix;
+}
+
+const math::Frustum& Camera::GetFrustum() const
+{
+	return _frustum;
+}
+
+const XMMATRIX& Camera::GetProjectionMatrix() const
+{
+	return _projMatrix;	
 }
 
 const XMFLOAT3& Camera::GetPos() const
