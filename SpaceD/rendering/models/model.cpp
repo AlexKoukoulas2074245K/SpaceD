@@ -59,6 +59,11 @@ const math::Dimensions& Model::GetDimensions() const
 	return _dimensions;
 }
 
+const FLOAT Model::GetBiggestDimensionRad() const
+{
+	return math::max3f(_dimensions._width, _dimensions._height, _dimensions._depth) / 2.0f;
+}
+
 UINT Model::GetIndexCount() const 
 {
 	return static_cast<UINT>(_rawIndexData.size());

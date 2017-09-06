@@ -13,6 +13,7 @@
 
 class ClientWindow;
 class Game;
+class Model;
 
 class Camera
 {
@@ -32,18 +33,20 @@ public:
 	void RotateCamera(const Direction direction, const FLOAT amount);
 	void PanCamera(const Direction direction, const FLOAT amount);
 
-	bool isVisible(const XMFLOAT3& pos, const FLOAT rad);
+	bool isVisible(const Model& model);
 
-	// The calculation methods should be used before the accessors below 
-	void CalculateViewAndProjection(const ClientWindow& window);
-	void CalculateFrustum();
+	void Update(const ClientWindow& window);
 
 	const XMMATRIX& GetViewMatrix() const;
 	const XMMATRIX& GetProjectionMatrix() const;
 	const math::Frustum& GetFrustum() const;
 
 	const XMFLOAT3& GetPos() const;
-	
+
+private:
+	void CalculateViewAndProjection(const ClientWindow& window);
+	void CalculateFrustum();
+
 private:
 	static const XMFLOAT3 DEFAULT_FORWARD;
 	static const XMFLOAT3 DEFAULT_UP;

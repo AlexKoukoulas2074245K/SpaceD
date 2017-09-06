@@ -145,4 +145,14 @@ namespace math
 		if (dff > 0) return dff;
 		return -dff;
 	}
+
+	static float max2f(const FLOAT a, const FLOAT b)
+	{
+		return a > b ? a : b;
+	}
+
+	static float max3f(const FLOAT a, const FLOAT b, const FLOAT c)
+	{
+		return max2f(a, max2f(b, c));
+	}
 }

@@ -28,7 +28,8 @@ public:
 	math::Transform& GetTransform();
 
 	const math::Dimensions& GetDimensions() const;
-
+	const FLOAT GetBiggestDimensionRad() const;
+	
 	UINT GetIndexCount() const; 
 	
 	comptr<ID3D11Buffer> GetVertexBuffer() const;

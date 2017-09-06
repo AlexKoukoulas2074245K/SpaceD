@@ -21,6 +21,7 @@ class Renderer;
 class Model;
 class UIModel;
 class Camera;
+class Scene;
 
 class Game final
 {
@@ -34,7 +35,7 @@ public:
 
 private:
 	void OnResize();
-	void Update(const float deltaTime);
+	void Update(const FLOAT deltaTime);
 	void Render();
 	void CalculateFrameStats();
 
@@ -42,10 +43,11 @@ private:
 	std::unique_ptr<InputHandler> _inputHandler;
     std::unique_ptr<ClientWindow> _clientWindow;
 	std::unique_ptr<GameTimer> _gameTimer;
-	std::unique_ptr<Renderer> _renderer;	
+	std::unique_ptr<Renderer> _renderer;		
+	std::unique_ptr<Scene> _scene;
+
 	std::shared_ptr<Model> _shipModel;
-	std::shared_ptr<UIModel> _uiModel;
-	
+
 	// Stack allocated to avoid matrix misalignments
 	Camera _camera;
 

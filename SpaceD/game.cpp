@@ -7,6 +7,7 @@
 #include "game.h"
 #include "inputhandler.h"
 #include "camera.h"
+#include "scene.h"
 #include "rendering/objloader.h"
 #include "rendering/renderer.h"
 #include "rendering/models/model.h"
@@ -44,9 +45,12 @@ Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, 
 	_clientWindow = std::make_unique<ClientWindow>(hInstance, WndProc, clientName, clientWidth, clientHeight);
 	_renderer     = std::make_unique<Renderer>(*_clientWindow);	
 	_inputHandler = std::make_unique<InputHandler>();		
+	_scene        = std::make_unique<Scene>(*_renderer, _camera);
 
-	_shipModel = std::make_unique<Model>("ship_dps");
+	_shipModel = std::make_shared<Model>("ship_dps");
 	_shipModel->LoadModelComponents(_renderer->GetDevice());
+
+	_scene->InsertObect(_shipModel);
 }
 
 Game::~Game()
@@ -271,7 +275,7 @@ static float targetRad = 0.0f;
 static float shipVelY;
 static float shipVelX;
 
-void Game::Update(const float deltaTime)
+void Game::Update(const FLOAT deltaTime)
 {
 	if (_inputHandler->IsKeyDown(InputHandler::LEFT)) _camera.RotateCamera(Camera::LEFT, deltaTime * 4);
 	if (_inputHandler->IsKeyDown(InputHandler::RIGHT)) _camera.RotateCamera(Camera::RIGHT, deltaTime * 4);
@@ -284,8 +288,7 @@ void Game::Update(const float deltaTime)
 	if (_inputHandler->IsKeyDown(InputHandler::Q)) _camera.MoveCamera(Camera::UP, deltaTime * 4);
 	if (_inputHandler->IsKeyDown(InputHandler::E)) _camera.MoveCamera(Camera::DOWN, deltaTime * 4);
 
-	_camera.CalculateViewAndProjection(*_clientWindow);
-	_camera.CalculateFrustum();
+	_camera.Update(*_clientWindow);
 
 	XMMATRIX viewMatrix = _camera.GetViewMatrix();
 	XMMATRIX projMatrix = _camera.GetProjectionMatrix();
@@ -362,6 +365,8 @@ void Game::Update(const float deltaTime)
 			rotRight = false;
 		}
 	}
+
+	_scene->Update(deltaTime);
 }
 
 void Game::Render()
@@ -395,17 +400,16 @@ void Game::Render()
 	cb.gWorld = worldMatrix;
 	cb.gWorldInvTranspose = math::InverseTranspose(worldMatrix);
 	cb.gWorldViewProj = wvp;
-
-	const auto spherePos = _shipModel->GetTransform().translation;
-	const auto sphereRad = _shipModel->GetDimensions()._width/2.0f;
 		
 	//_renderer->RenderDebugSphere(cb.gPointLight.Position, XMFLOAT3(4.0f, 4.0f, 4.0f), viewMatrix, projMatrix);
 	
-	if (_camera.isVisible(spherePos, sphereRad))
+	if (_camera.isVisible(*_shipModel))
 	{
 		_renderer->RenderModel(*_shipModel, &cb);
 	}
 	
+	_scene->Render();
+
 	//_renderer->RenderText(shipVelX, XMFLOAT2(-1.0f, 0.95f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 	//_renderer->RenderText(_shipModel->GetTransform().rotation.z, XMFLOAT2(-1.0f, 0.9f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 	
