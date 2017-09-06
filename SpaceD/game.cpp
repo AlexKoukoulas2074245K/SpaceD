@@ -411,7 +411,7 @@ void Game::Render()
 	_scene->Render();
 
 	//_renderer->RenderText(shipVelX, XMFLOAT2(-1.0f, 0.95f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-	//_renderer->RenderText(_shipModel->GetTransform().rotation.z, XMFLOAT2(-1.0f, 0.9f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+	//_renderer->RenderText(std::to_string(_shipModel->GetTransform().translation.x) + ", " + std::to_string(_shipModel->GetTransform().translation.z), XMFLOAT2(-1.0f, 0.9f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 	
 	//_renderer->RenderText("Camera pos: " + std::to_string(_camera._pos.x) + ", " + std::to_string(_camera._pos.y) + ", " + std::to_string(_camera._pos.z), XMFLOAT2(-1.0f, 0.95f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 	//_renderer->RenderText("Camera pyr: " + std::to_string(_camera._pitch) + ", " + std::to_string(_camera._yaw) + ", " + std::to_string(_camera._roll), XMFLOAT2(-1.0f, 0.9f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));

@@ -31,8 +31,8 @@ private:
 	void ConstructScene();
 
 private:
-	static const UINT CELL_ROWS = 8U;
-	static const UINT CELL_COLS = 8U;
+	static const UINT CELL_ROWS = 6U;
+	static const UINT CELL_COLS = 6U;
 	static const FLOAT CELL_SIZE;
 
 private:
@@ -61,7 +61,8 @@ private:
 	Camera& _camera;
 
 	Cell _sceneGraph[CELL_ROWS][CELL_COLS];
-	
+	std::vector<std::shared_ptr<Model>> _outOfBoundsObjects;
+
 	std::unique_ptr<Model> _sceneCellModel;
 
 	comptr<ID3D11ShaderResourceView> _defaultCellTexture;
