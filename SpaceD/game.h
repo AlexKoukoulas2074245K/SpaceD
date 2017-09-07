@@ -17,9 +17,8 @@
 class InputHandler;
 class ClientWindow;
 class GameTimer;
+class GameEntity;
 class Renderer;
-class Model;
-class UIModel;
 class Camera;
 class Scene;
 
@@ -46,7 +45,7 @@ private:
 	std::unique_ptr<Renderer> _renderer;		
 	std::unique_ptr<Scene> _scene;
 
-	std::shared_ptr<Model> _shipModel;
+	std::shared_ptr<GameEntity> _ship;
 
 	// Stack allocated to avoid matrix misalignments
 	Camera _camera;

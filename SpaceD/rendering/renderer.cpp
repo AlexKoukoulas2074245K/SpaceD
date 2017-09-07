@@ -92,9 +92,9 @@ void Renderer::RenderText(const std::string& text, const XMFLOAT2& pos, const XM
 		const auto letter = std::string(1, upperText[i]);
 		auto& glyph  = _fontEngine->GetGlyph(letter);
 		
-		glyph.GetTransform().translation.x = posCounter.x;
-		glyph.GetTransform().translation.y = posCounter.y;
-		glyph.GetTransform().scale = XMFLOAT3(glyphSize, glyphSize, glyphSize);
+		glyph.GetTransform()._translation.x = posCounter.x;
+		glyph.GetTransform()._translation.y = posCounter.y;
+		glyph.GetTransform()._scale = XMFLOAT3(glyphSize, glyphSize, glyphSize);
 		cb.gWorld = glyph.CalculateWorldMatrix();
 		
 		RenderModel(glyph, &cb);
@@ -134,8 +134,8 @@ void Renderer::RenderDebugSphere(const XMFLOAT3& pos, const XMFLOAT3& scale, con
 	const auto currentShader = _activeShaderType;
 	SetShader(Shader::ShaderType::DEFAULT_3D);
 	
-	_debugSphereModel->GetTransform().translation = pos;
-	_debugSphereModel->GetTransform().scale = scale;
+	_debugSphereModel->GetTransform()._translation = pos;
+	_debugSphereModel->GetTransform()._scale = scale;
 
 	Default3dShader::ConstantBuffer cb;
 	cb.gWorld = _debugSphereModel->CalculateWorldMatrix();
@@ -146,6 +146,11 @@ void Renderer::RenderDebugSphere(const XMFLOAT3& pos, const XMFLOAT3& scale, con
 	RenderModel(*_debugSphereModel, &cb);
 	_renderingContext->SetWireframe(false);
 	SetShader(currentShader);
+}
+
+void Renderer::RenderPointLight(const XMFLOAT3& pos, const FLOAT range, const XMMATRIX& viewMatrix, const XMMATRIX& projMatrix)
+{
+	RenderDebugSphere(pos, XMFLOAT3(range * 2, range * 2, range * 2), viewMatrix, projMatrix);
 }
 
 comptr<ID3D11Device> Renderer::GetDevice() const

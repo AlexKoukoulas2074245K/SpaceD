@@ -137,7 +137,7 @@ void Camera::PanCamera(const Direction direction, const FLOAT amount)
 
 bool Camera::isVisible(const Model& model)
 {
-	const auto pos3D = model.GetTransform().translation;
+	const auto pos3D = model.GetTransform().GetTranslation();
 	const auto pos4D = XMFLOAT4(pos3D.x, pos3D.y, pos3D.z, 1.0f);
 	const auto posVec = XMLoadFloat4(&pos4D);
 

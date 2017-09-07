@@ -51,15 +51,15 @@ struct SpotLight
 
 cbuffer cbPerObject
 {
-	float4x4 gWorld;
-	float4x4 gWorldInvTranspose;
-	float4x4 gWorldViewProj;	
-	Material gMaterial;
-	DirectionalLight gDirLight;
-	PointLight gPointLight;
-	SpotLight gSpotLight;
+	float4x4 gWorld;                
+	float4x4 gWorldInvTranspose;    
+	float4x4 gWorldViewProj;	    
+	Material gMaterial;             
+	DirectionalLight gDirLight;     
+	PointLight gPointLights[16];         
+	SpotLight gSpotLight;           
 	float3 gEyePosW;
-	int gLightCount;
+	int gPointLightCount; 
 }; 
 
 

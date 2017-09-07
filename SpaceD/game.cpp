@@ -10,8 +10,7 @@
 #include "scene.h"
 #include "rendering/objloader.h"
 #include "rendering/renderer.h"
-#include "rendering/models/model.h"
-#include "rendering/shaders/default3dwithlightingshader.h"
+#include "gameentities/gameentity.h"
 #include "util/clientwindow.h"
 #include "util/gametimer.h"
 #include "util/math.h"
@@ -44,13 +43,11 @@ Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, 
 
 	_clientWindow = std::make_unique<ClientWindow>(hInstance, WndProc, clientName, clientWidth, clientHeight);
 	_renderer     = std::make_unique<Renderer>(*_clientWindow);	
-	_inputHandler = std::make_unique<InputHandler>();		
+	_inputHandler = std::make_unique<InputHandler>(*_clientWindow);		
 	_scene        = std::make_unique<Scene>(*_renderer, _camera);
 
-	_shipModel = std::make_shared<Model>("ship_dps");
-	_shipModel->LoadModelComponents(_renderer->GetDevice());
-
-	_scene->InsertObect(_shipModel);
+	_ship = std::make_shared<GameEntity>("ship_dps", _camera, *_inputHandler, *_renderer);	
+	_scene->InsertObect(_ship);
 }
 
 Game::~Game()
@@ -269,12 +266,6 @@ void Game::OnResize()
 	_renderer->OnResize();
 }
 
-static bool rotLeft = false;
-static bool rotRight = false;
-static float targetRad = 0.0f;
-static float shipVelY;
-static float shipVelX;
-
 void Game::Update(const FLOAT deltaTime)
 {
 	if (_inputHandler->IsKeyDown(InputHandler::LEFT)) _camera.RotateCamera(Camera::LEFT, deltaTime * 4);
@@ -289,125 +280,12 @@ void Game::Update(const FLOAT deltaTime)
 	if (_inputHandler->IsKeyDown(InputHandler::E)) _camera.MoveCamera(Camera::DOWN, deltaTime * 4);
 
 	_camera.Update(*_clientWindow);
-
-	XMMATRIX viewMatrix = _camera.GetViewMatrix();
-	XMMATRIX projMatrix = _camera.GetProjectionMatrix();
-
-	XMFLOAT4 trans4(_shipModel->GetTransform().translation.x, _shipModel->GetTransform().translation.y, _shipModel->GetTransform().translation.z, 1.0f);
-	auto transVec = XMLoadFloat4(&trans4);
-	auto viewProj = viewMatrix * projMatrix;
-	transVec = XMVector4Normalize(XMVector4Transform(transVec, viewProj));
-	transVec *= 2;
-
-	const auto ndcCoords = math::MouseToNDC(_inputHandler->GetMousePos().x, _inputHandler->GetMousePos().y, _clientWindow->GetWidth(), _clientWindow->GetHeight());
-
-	const auto nDiff = math::absf(ndcCoords.x, XMVectorGetX(transVec));
-
-	if (nDiff < 0.0005f)
-	{
-		shipVelX = 0.0f;
-	}
-	else if (ndcCoords.x < XMVectorGetX(transVec))
-	{
-		shipVelX = - 200 * deltaTime * nDiff;
-	}
-	else if (ndcCoords.x > XMVectorGetX(transVec))
-	{
-		shipVelX = 200 * deltaTime * nDiff;
-	}
-
-	const auto nDiffY = math::absf(ndcCoords.y, XMVectorGetY(transVec));
-
-	if (nDiffY < 0.0005f)
-	{
-		shipVelY = 0.0f;
-	}
-	else if (ndcCoords.y < XMVectorGetY(transVec))
-	{
-		shipVelY = 200 * deltaTime * nDiffY;
-	}
-	else if (ndcCoords.y > XMVectorGetY(transVec))
-	{
-		shipVelY = -200 * deltaTime * nDiffY;
-	}
-
-	_shipModel->GetTransform().translation.x += shipVelX;
-	_shipModel->GetTransform().translation.z += shipVelY;
-
-	if (shipVelX > 0.3f)
-	{
-		if (rotLeft || rotRight)
-			return;
-
-		rotLeft = true;
-		targetRad = _shipModel->GetTransform().rotation.z - math::PI;
-	}
-	if (shipVelX < -0.3f)
-	{
-		if (rotLeft || rotRight)
-			return;
-
-		rotRight = true;
-		targetRad = _shipModel->GetTransform().rotation.z + math::PI;
-	}
-
-	if (rotLeft)
-	{
-		if (math::lerp(_shipModel->GetTransform().rotation.z, targetRad, 6 * deltaTime, _shipModel->GetTransform().rotation.z))
-		{
-			rotLeft = false;
-		}
-	}
-	else if (rotRight)
-	{
-		if (math::lerp(_shipModel->GetTransform().rotation.z, targetRad, 6 * deltaTime, _shipModel->GetTransform().rotation.z))
-		{
-			rotRight = false;
-		}
-	}
-
 	_scene->Update(deltaTime);
 }
 
 void Game::Render()
 {
 	_renderer->ClearViews();
-
-	const auto worldMatrix = _shipModel->CalculateWorldMatrix();
-
-	auto wvp = worldMatrix * _camera.GetViewMatrix() * _camera.GetProjectionMatrix();
-
-	Default3dWithLightingShader::ConstantBuffer cb;
-	cb.gEyePosW = _camera.GetPos();
-	cb.gLightCount = 3;
-	
-	cb.gMaterial.Ambient = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-	cb.gMaterial.Diffuse = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-	cb.gMaterial.Specular = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
-
-	cb.gDirLight.Ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);	
-    cb.gDirLight.Diffuse = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
-	cb.gDirLight.Specular = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
-    cb.gDirLight.Direction = XMFLOAT3(0.0f, 1.0f, -1.0f);
-
-	cb.gPointLight.Ambient = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
-	cb.gPointLight.Diffuse = XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f);
-	cb.gPointLight.Specular = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-	cb.gPointLight.Att = XMFLOAT3(0.0f, 0.0f, 0.5f);
-	cb.gPointLight.Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	cb.gPointLight.Range = 16.0f;
-
-	cb.gWorld = worldMatrix;
-	cb.gWorldInvTranspose = math::InverseTranspose(worldMatrix);
-	cb.gWorldViewProj = wvp;
-		
-	//_renderer->RenderDebugSphere(cb.gPointLight.Position, XMFLOAT3(4.0f, 4.0f, 4.0f), viewMatrix, projMatrix);
-	
-	if (_camera.isVisible(*_shipModel))
-	{
-		_renderer->RenderModel(*_shipModel, &cb);
-	}
-	
 	_scene->Render();
 
 	//_renderer->RenderText(shipVelX, XMFLOAT2(-1.0f, 0.95f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));

@@ -223,15 +223,15 @@ void ComputeSpotLight(Material mat, SpotLight L, float3 pos, float3 normal, floa
 
 cbuffer cbPerObject
 {
-	float4x4 gWorld;
-	float4x4 gWorldInvTranspose;
-	float4x4 gWorldViewProj;	
-	Material gMaterial;
-	DirectionalLight gDirLight;
-	PointLight gPointLight;
-	SpotLight gSpotLight;
+	float4x4 gWorld;                
+	float4x4 gWorldInvTranspose;    
+	float4x4 gWorldViewProj;	    
+	Material gMaterial;             
+	DirectionalLight gDirLight;     
+	PointLight gPointLights[16];         
+	SpotLight gSpotLight;           
 	float3 gEyePosW;
-	int gLightCount;
+	int gPointLightCount;           
 }; 
 
 struct VertexOut
@@ -268,20 +268,24 @@ float4 PS(VertexOut pin) : SV_Target
 	float4 spec    = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
 	// Sum the light contribution from each light source.  
-	float4 A, D, S;
-	//[unroll]
-	//for(int i = 0; i < gLightCount; ++i)
-	//{		
-	ComputeDirectionalLight(gMaterial, gDirLight, pin.NormalW, toEye, A, D, S);
+	float4 A = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	float4 D = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	float4 S = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	
+	//ComputeDirectionalLight(gMaterial, gDirLight, pin.NormalW, toEye, A, D, S);
 	ambient += A;
 	diffuse += D;
 	spec    += S;
-
-	ComputePointLight(gMaterial, gPointLight, pin.PosW, pin.NormalW, toEye, A, D, S);
-	ambient += A;
-	diffuse += D;
-	spec    += S;
-
+    
+	[unroll]
+	for(int i = 0; i < gPointLightCount; ++i)
+	{		
+	    ComputePointLight(gMaterial, gPointLights[i], pin.PosW, pin.NormalW, toEye, A, D, S);
+	    ambient += A;
+	    diffuse += D;
+	    spec    += S;
+    }
+	
 	ComputeSpotLight(gMaterial, gSpotLight, pin.PosW, pin.NormalW, toEye, A, D, S);
 	ambient += A;
 	diffuse += D;

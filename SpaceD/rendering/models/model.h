@@ -14,9 +14,15 @@
 #include <string>
 #include <vector>
 
+class GameEntity;
+class Scene;
+
 class Model
 {
 public:
+	friend class GameEntity;
+	friend class Scene;
+
 	Model(const std::string& modelName);
 	virtual ~Model();
 

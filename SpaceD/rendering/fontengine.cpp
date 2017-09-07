@@ -104,7 +104,7 @@ void FontEngine::LoadGlyphs(comptr<ID3D11Device> device)
 			_glyphs[targetLetter] = std::move(std::unique_ptr<Model>(new GlyphModel(targetLetter, glyphTexCoords)));
 			_glyphs[targetLetter]->LoadModelComponents(device);
 			_glyphs[targetLetter]->SetTexture(_texture);
-			_glyphs[targetLetter]->GetTransform().scale = XMFLOAT3(_size, _size, _size);
+			_glyphs[targetLetter]->GetTransform()._scale = XMFLOAT3(_size, _size, _size);
 		}
 	}
 }

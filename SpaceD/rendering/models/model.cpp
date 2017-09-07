@@ -38,9 +38,9 @@ Model::~Model()
 
 const XMMATRIX Model::CalculateWorldMatrix() const
 {
-	const auto scaleMatrix = XMMatrixScaling(_transform.scale.x, _transform.scale.y, _transform.scale.z);
-	const auto rotMatrix = XMMatrixRotationX(_transform.rotation.x) * XMMatrixRotationY(_transform.rotation.y) * XMMatrixRotationZ(_transform.rotation.z);
-	const auto transMatrix = XMMatrixTranslation(_transform.translation.x, _transform.translation.y, _transform.translation.z);
+	const auto scaleMatrix = XMMatrixScaling(_transform.GetScale().x, _transform.GetScale().y, _transform.GetScale().z);
+	const auto rotMatrix = XMMatrixRotationX(_transform.GetRotation().x) * XMMatrixRotationY(_transform.GetRotation().y) * XMMatrixRotationZ(_transform.GetRotation().z);
+	const auto transMatrix = XMMatrixTranslation(_transform.GetTranslation().x, _transform.GetTranslation().y, _transform.GetTranslation().z);
 	return scaleMatrix * rotMatrix * transMatrix;
 }
 

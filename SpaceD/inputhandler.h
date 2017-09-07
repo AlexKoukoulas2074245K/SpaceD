@@ -6,6 +6,8 @@
 #pragma once
 
 // Local Headers
+#include "rendering/d3dcommon.h"
+#include "util/math.h"
 
 // Remote Headers
 #include <unordered_map>
@@ -13,6 +15,8 @@
 #include <Windowsx.h>
 
 class Game;
+class ClientWindow;
+
 class InputHandler final
 {
 	friend class Game;
@@ -33,7 +37,7 @@ public:
 	};
 
 public:
-	InputHandler();
+	InputHandler(const ClientWindow& window);
 	~InputHandler();
 
 	// Accessor Methods
@@ -47,6 +51,7 @@ public:
 
 	MouseWheelState GetMouseWheelState() const;
 	const POINT& GetMousePos() const;
+	XMFLOAT2 GetMouseNDCCoords() const;
 
 	// Update Methods
 	void OnMouseDown(const Button button, LPARAM lParam);
@@ -60,6 +65,8 @@ public:
 	void OnFrameEnd();
 
 private:
+	const ClientWindow& _clientWindow;
+	
 	BYTE  _buttonCurrentState;
 	BYTE  _buttonPreviousState;
 
@@ -68,6 +75,6 @@ private:
 
 	POINT _mousePos;
 	MouseWheelState _mouseWheelState;
-
+	
 	std::unordered_map<UINT, UINT> _winVkDictionary;
 };

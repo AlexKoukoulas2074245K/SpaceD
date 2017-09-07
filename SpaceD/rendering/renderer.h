@@ -35,6 +35,7 @@ public:
 	void RenderText(const INT text, const XMFLOAT2& pos, const XMFLOAT4& color);
 	void RenderText(const std::string& text, const XMFLOAT2& pos, const XMFLOAT4& color);
 	void RenderDebugSphere(const XMFLOAT3& pos, const XMFLOAT3& scale, const XMMATRIX& viewMatrix, const XMMATRIX& projMatrix);
+	void RenderPointLight(const XMFLOAT3& pos, const FLOAT range, const XMMATRIX& viewMatrix, const XMMATRIX& projMatrix);
 	void RenderModel(const Model& model, const void* constantBufferData);
 
 	comptr<ID3D11Device> GetDevice() const;

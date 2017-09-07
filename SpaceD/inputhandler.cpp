@@ -7,11 +7,13 @@
 
 // Local Headers
 #include "inputhandler.h"
+#include "util/clientwindow.h"
 
 // Remote Headers
 
-InputHandler::InputHandler()
-	: _buttonCurrentState(0U)
+InputHandler::InputHandler(const ClientWindow& window)
+	: _clientWindow(window)
+	, _buttonCurrentState(0U)
 	, _buttonPreviousState(0U)
 	, _keyCurrentState(0U)
 	, _keyPreviousState(0U)
@@ -73,6 +75,11 @@ InputHandler::MouseWheelState InputHandler::GetMouseWheelState() const
 const POINT& InputHandler::GetMousePos() const
 {
 	return _mousePos;
+}
+
+XMFLOAT2 InputHandler::GetMouseNDCCoords() const
+{
+	return math::MouseToNDC(_mousePos.x, _mousePos.y, _clientWindow.GetWidth(), _clientWindow.GetHeight());
 }
 
 void InputHandler::OnMouseDown(const Button button, LPARAM lParam)

@@ -13,9 +13,10 @@
 #include <memory>
 #include <vector>
 
-class Model;
 class Renderer;
 class Camera;
+class Model;
+class GameEntity;
 
 class Scene final
 {
@@ -23,12 +24,9 @@ public:
 	Scene(Renderer& renderer, Camera& ref);
 	~Scene();
 
-	void InsertObect(std::shared_ptr<Model> model);
+	void InsertObect(std::shared_ptr<GameEntity> entity);
 	void Update(const FLOAT deltaTime);
 	void Render();
-
-private:
-	void ConstructScene();
 
 private:
 	static const UINT CELL_ROWS = 6U;
@@ -36,12 +34,24 @@ private:
 	static const FLOAT CELL_SIZE;
 
 private:
+	struct CellCoords
+	{
+		INT _col;
+		INT _row;
+
+		CellCoords(const INT col, const INT row)
+			: _col(col)
+			, _row(row)
+		{
+		}
+	};
+
 	struct Cell
 	{
 		FLOAT _x;
 		FLOAT _z;
 
-		std::vector<std::shared_ptr<Model>> _residents;
+		std::vector<std::shared_ptr<GameEntity>> _residents;
 
 		Cell()
 			: _x(0.0f)
@@ -57,11 +67,17 @@ private:
 	};
 
 private:
+	void ConstructScene();
+
+	bool IsOutOfBounds(const GameEntity& entity) const;
+	CellCoords GetCellCoords(const GameEntity& entity) const;
+
+private:
 	Renderer& _renderer;
 	Camera& _camera;
 
 	Cell _sceneGraph[CELL_ROWS][CELL_COLS];
-	std::vector<std::shared_ptr<Model>> _outOfBoundsObjects;
+	std::vector<std::shared_ptr<GameEntity>> _outOfBoundsObjects;
 
 	std::unique_ptr<Model> _sceneCellModel;
 

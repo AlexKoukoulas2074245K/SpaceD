@@ -19,6 +19,9 @@ class Default3dWithLightingShader: public Shader
 	friend class Renderer;
 
 public:
+	static const UINT MAX_POINT_LIGHTS = 16U;
+
+public:
 	struct DirectionalLight
 	{
 		DirectionalLight() { ZeroMemory(this, sizeof(this)); }
@@ -85,10 +88,10 @@ public:
 		XMMATRIX gWorldViewProj;
 		Material gMaterial;
 		DirectionalLight gDirLight;
-		PointLight gPointLight;
+		PointLight gPointLights[MAX_POINT_LIGHTS];
 		SpotLight gSpotLight;
 		XMFLOAT3 gEyePosW;
-		int gLightCount;
+		int gPointLightCount;
 	};
 
 public:

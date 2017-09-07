@@ -16,17 +16,21 @@ namespace math
 
 	struct Transform
 	{
-		XMFLOAT3 translation;
-		XMFLOAT3 rotation;
-		XMFLOAT3 scale;
+		XMFLOAT3 _translation;
+		XMFLOAT3 _rotation;
+		XMFLOAT3 _scale;
 
 		Transform()
-			: translation(0.0f, 0.0f, 0.0f)
-			, rotation(0.0f, 0.0f, 0.0f)
-			, scale(1.0f, 1.0f, 1.0f)
+			: _translation(0.0f, 0.0f, 0.0f)
+			, _rotation(0.0f, 0.0f, 0.0f)
+			, _scale(1.0f, 1.0f, 1.0f)
 		{
 
 		}
+
+		const XMFLOAT3& GetTranslation() const { return _translation; }
+		const XMFLOAT3& GetScale() const { return _scale; }
+		const XMFLOAT3& GetRotation() const { return _rotation; }
 	};
 
 	struct Dimensions
