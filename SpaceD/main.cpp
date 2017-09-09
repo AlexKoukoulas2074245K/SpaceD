@@ -14,7 +14,7 @@
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, int showCmd)
 {
 	//TODO change to config values
-	auto clientWidth   = 800;
+	auto clientWidth   = 600;
 	auto clientHeight  = 900;
 	auto clientName = "Space-D";
 	

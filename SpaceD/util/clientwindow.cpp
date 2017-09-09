@@ -18,7 +18,7 @@ ClientWindow::ClientWindow(HINSTANCE instance, WNDPROC wndProc, const std::strin
 	WNDCLASS wc      = {};
 	wc.cbClsExtra    = 0;
 	wc.cbWndExtra    = 0;
-	wc.hbrBackground = 0;
+	wc.hbrBackground = (HBRUSH)GetStockObject(NULL_BRUSH);
 	wc.hCursor       = LoadCursor(0, IDC_ARROW);
 	wc.hIcon         = LoadIcon(0, IDI_APPLICATION);
 	wc.hInstance     = instance;
@@ -51,7 +51,7 @@ ClientWindow::ClientWindow(HINSTANCE instance, WNDPROC wndProc, const std::strin
 		PostQuitMessage(-1);
 	}
 
-	// Show and update window
+	// Show and Update window
 	ShowWindow(_handle, SW_SHOW);
 	UpdateWindow(_handle);
 }

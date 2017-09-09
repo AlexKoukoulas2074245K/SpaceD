@@ -30,9 +30,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return game->MsgProc(hwnd, msg, wParam, lParam);
 }
 
-Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, const int clientHeight)		
-	: _gameTimer(std::make_unique<GameTimer>())
-	, _debugPrompt(false)
+Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, const int clientHeight)
+	: _debugPrompt(false)
 	, _paused(false)
 	, _minimized(false)
 	, _maximized(false)
@@ -42,16 +41,17 @@ Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, 
 	// be members of a class)
 	game = this;
 
+	_gameTimer = std::make_unique<GameTimer>();
 	_clientWindow = std::make_unique<ClientWindow>(hInstance, WndProc, clientName, clientWidth, clientHeight);
-	_renderer     = std::make_unique<Renderer>(*_clientWindow);	
-	_inputHandler = std::make_unique<InputHandler>(*_clientWindow);		
-	_scene        = std::make_unique<Scene>(*_renderer, _camera);
+	_renderer = std::make_unique<Renderer>(*_clientWindow);
+	_inputHandler = std::make_unique<InputHandler>(*_clientWindow);
+	_scene = std::make_unique<Scene>(*_renderer, _camera);
 
-	_ship = std::make_shared<GameEntity>("ship_dps", _camera, *_inputHandler, *_renderer);	
+	_ship = std::make_shared<GameEntity>("ship_dps", _camera, *_inputHandler, *_renderer);
 	_scene->InsertEntity(_ship);
 
 	std::shared_ptr<DirectionalLight> dirLight = std::make_shared<DirectionalLight>();
-    dirLight->Ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
+	dirLight->Ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
 	dirLight->Diffuse = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
 	dirLight->Specular = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
 	dirLight->Direction = XMFLOAT3(0.0f, 1.0f, -1.0f);
@@ -74,7 +74,7 @@ Game::~Game()
 }
 
 void Game::Run()
-{
+{		
 	_gameTimer->Reset();
 
 	// Message Loop
@@ -114,7 +114,7 @@ LRESULT Game::MsgProc(HWND handle, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		// WM_ACTIVATE is sent when the window is activated or deactivated.  		
 		case WM_ACTIVATE:
-		{
+		{			
 			if (LOWORD(wParam) == WA_INACTIVE)
 			{
 				_paused = true;
@@ -130,18 +130,18 @@ LRESULT Game::MsgProc(HWND handle, UINT msg, WPARAM wParam, LPARAM lParam)
 		
 		// WM_SIZE is sent when the user resizes the window.  
 		case WM_SIZE:
-		{
+		{			
 			// Save the new client area dimensions.
 			auto newWidth = LOWORD(lParam);
 			auto newHeight = HIWORD(lParam);
             
 			if (_clientWindow)
-			{
+			{			
 				_clientWindow->UpdateOnResize(newWidth, newHeight);
 			}
 
 			if (_renderer)
-			{
+			{				
 				if (wParam == SIZE_MINIMIZED)
 				{
 					_paused    = true;
@@ -195,7 +195,7 @@ LRESULT Game::MsgProc(HWND handle, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		// WM_EXITSIZEMOVE is sent when the user grabs the resize bars.
 		case WM_ENTERSIZEMOVE:
-		{
+		{		
 			_paused = true;
 			_resizing = true;
 			_gameTimer->Stop();			
@@ -203,13 +203,13 @@ LRESULT Game::MsgProc(HWND handle, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		// WM_EXITSIZEMOVE is sent when the user releases the resize bars.		
 		case WM_EXITSIZEMOVE:
-		{
+		{			
 			_paused = false;
 			_resizing = false;
 			_gameTimer->Start();
 			OnResize();			
 		} break;
-
+		
 		// WM_DESTROY is sent when the window is being destroyed.
 		case WM_DESTROY:
 		{
