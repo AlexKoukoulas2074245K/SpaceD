@@ -89,6 +89,11 @@ std::shared_ptr<OBJLoader::ModelData> OBJLoader::LoadOBJData(const std::string& 
 	FLOAT minZ = 0.0f;
 	FLOAT maxZ = 0.0f;
 	
+	Material mat;
+	mat.Ambient  = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	mat.Diffuse  = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	mat.Specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+
 	std::string line;
 	while (std::getline(fileStream, line))
 	{
@@ -99,8 +104,37 @@ std::shared_ptr<OBJLoader::ModelData> OBJLoader::LoadOBJData(const std::string& 
 
 		auto lineSplitBySpace = string_utils::split(line, ' ');
 
+		// Material attirbute entry
+		if (line[0] == 'm')
+		{
+			// Ambient entry
+			if (line[1] == 'a')
+			{
+				mat.Ambient = XMFLOAT4(std::stof(lineSplitBySpace[1]),
+					                   std::stof(lineSplitBySpace[2]),
+					                   std::stof(lineSplitBySpace[3]),
+					                   std::stof(lineSplitBySpace[4]));
+			}
+			// Diffuse entry
+			else if (line[1] == 'd')
+			{
+				mat.Diffuse = XMFLOAT4(std::stof(lineSplitBySpace[1]),
+					                   std::stof(lineSplitBySpace[2]),
+					                   std::stof(lineSplitBySpace[3]),
+					                   std::stof(lineSplitBySpace[4]));
+			}
+			// Specular entry
+			else
+			{
+				mat.Specular = XMFLOAT4(std::stof(lineSplitBySpace[1]),
+					                    std::stof(lineSplitBySpace[2]),
+					                    std::stof(lineSplitBySpace[3]),
+					                    std::stof(lineSplitBySpace[4]));
+			}
+		}
+
 		// Vertex attribute entry
-		if (line[0] == 'v')
+		else if (line[0] == 'v')
 		{
 			// Texcoord entry
 			if (line[1] == 't')
@@ -170,7 +204,7 @@ std::shared_ptr<OBJLoader::ModelData> OBJLoader::LoadOBJData(const std::string& 
 	math::Dimensions dimensions(math::absf(maxX, minX), math::absf(maxY, minY), math::absf(maxZ, minZ));
 
 	// Can't use make shared with private constructors (even if OBJLoader is Model's friend)
-	auto loadedModelData = std::make_shared<OBJLoader::ModelData>(finalVertexData, finalIndexData, dimensions);
+	auto loadedModelData = std::make_shared<OBJLoader::ModelData>(finalVertexData, finalIndexData, dimensions, mat);
 	_objModelData[modelDataPath] = loadedModelData;
 
 	return loadedModelData;

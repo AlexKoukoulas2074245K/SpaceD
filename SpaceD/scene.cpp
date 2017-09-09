@@ -191,14 +191,9 @@ void Scene::Render()
 				auto wvp = worldMatrix * _camera.GetViewMatrix() * _camera.GetProjectionMatrix();
 				
 				cb.gEyePosW = _camera.GetPos();
-
-				cb.gMaterial.Ambient = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-				cb.gMaterial.Diffuse = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-				cb.gMaterial.Specular = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
-
+				cb.gMaterial = entity->GetModel().GetMaterial();
 				cb.gDirectionalLightCount = _directionalLights.size();
 				cb.gPointLightCount = _pointLights.size();
-				
 				cb.gWorld = worldMatrix;
 				cb.gWorldInvTranspose = math::InverseTranspose(worldMatrix);
 				cb.gWorldViewProj = wvp;

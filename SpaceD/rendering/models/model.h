@@ -9,6 +9,7 @@
 #include "../d3dcommon.h"
 #include "../vertex.h"
 #include "../../util/math.h"
+#include "../lightdef.h"
 
 // Remote Headers
 #include <string>
@@ -35,7 +36,8 @@ public:
 
 	const math::Dimensions& GetDimensions() const;
 	const FLOAT GetBiggestDimensionRad() const;
-	
+	const Material& GetMaterial() const;
+
 	UINT GetIndexCount() const; 
 	
 	comptr<ID3D11Buffer> GetVertexBuffer() const;
@@ -67,4 +69,5 @@ protected:
 
 	math::Transform _transform;
 	math::Dimensions _dimensions;
+	Material _material;
 };

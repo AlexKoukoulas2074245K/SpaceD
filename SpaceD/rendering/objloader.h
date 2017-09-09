@@ -8,6 +8,7 @@
 // Local Headers
 #include "d3dcommon.h"
 #include "vertex.h"
+#include "lightdef.h"
 
 // Remote Headers
 #include <memory>
@@ -23,11 +24,13 @@ public:
 		std::vector<Vertex> vertexData;
 		std::vector<UINT> indexData;
 		math::Dimensions dimensions;
+		Material material;
 
-		ModelData(const std::vector<Vertex>& rawVertexData, const std::vector<UINT>& rawIndexData, const math::Dimensions& dims)
+		ModelData(const std::vector<Vertex>& rawVertexData, const std::vector<UINT>& rawIndexData, const math::Dimensions& dims, const Material& mat)
 			: vertexData(rawVertexData)
 			, indexData(rawIndexData)
 			, dimensions(dims)
+			, material(mat)
 		{
 		}
 	};

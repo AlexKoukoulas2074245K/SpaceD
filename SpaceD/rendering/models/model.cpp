@@ -64,6 +64,11 @@ const FLOAT Model::GetBiggestDimensionRad() const
 	return math::max3f(_dimensions._width, _dimensions._height, _dimensions._depth) / 2.0f;
 }
 
+const Material& Model::GetMaterial() const
+{
+	return _material;
+}
+
 UINT Model::GetIndexCount() const 
 {
 	return static_cast<UINT>(_rawIndexData.size());
@@ -102,6 +107,7 @@ void Model::LoadModelData()
 	_rawVertexData = modelData->vertexData;
 	_rawIndexData = modelData->indexData;
 	_dimensions = modelData->dimensions;
+	_material = modelData->material;
 }
 
 void Model::LoadTexture(comptr<ID3D11Device> device)
