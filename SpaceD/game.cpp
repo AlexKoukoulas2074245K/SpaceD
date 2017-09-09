@@ -18,6 +18,7 @@
 // Remote Headers
 #include <sstream>
 #include <cmath>
+#include <Psapi.h>
 
 namespace
 {
@@ -307,6 +308,11 @@ void Game::CalculateFrameStats()
 	// Compute averages over one second period.
 	if ((_gameTimer->TotalTime() - timeElapsed) >= 1.0f)
 	{
+
+		PROCESS_MEMORY_COUNTERS pmc = {};
+		GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc));
+
+		auto mem = pmc.PeakWorkingSetSize / 1000000;
 		auto fps = (float)frameCnt; // fps = frameCnt / 1
 		auto mspf = 1000.0f / fps;
 
@@ -314,8 +320,9 @@ void Game::CalculateFrameStats()
 		outs.precision(6);
 		outs << "    "
 			<< "FPS: " << fps << "    "
-			<< "Frame Time: " << mspf << " (ms)";
-		_clientWindow->UpdateCaption(outs.str());
+			<< "Frame Time: " << mspf << " (ms)   "
+		    << "Mem Usage: " << mem << " (MB)";
+		_clientWindow->UpdateCaption(outs.str());		
 
 		// Reset for next average.
 		frameCnt = 0;

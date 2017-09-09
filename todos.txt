@@ -1,4 +1,2 @@
-add frustum culling
-debug lighting shader
 start building debug cmd prompt
 replace hard coded config values
