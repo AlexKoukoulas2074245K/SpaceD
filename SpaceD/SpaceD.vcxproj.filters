@@ -143,5 +143,8 @@
     <ClInclude Include="gameentities\gameentity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="rendering\lightdef.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

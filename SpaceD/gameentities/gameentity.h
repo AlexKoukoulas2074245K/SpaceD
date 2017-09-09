@@ -6,7 +6,6 @@
 #pragma once
 
 // Local Headers
-#include "../rendering/d3dcommon.h"
 #include "../util/math.h"
 
 // Remote Headers

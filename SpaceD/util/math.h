@@ -8,7 +8,10 @@
 // Local Headers
 
 // Remote Headers
+#include <Windows.h>
 #include <xnamath.h>
+
+typedef float FLOAT;
 
 namespace math
 {
