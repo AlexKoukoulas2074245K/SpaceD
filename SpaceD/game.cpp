@@ -14,6 +14,7 @@
 #include "util/clientwindow.h"
 #include "util/gametimer.h"
 #include "util/math.h"
+#include "util/debug/debugprompt.h"
 
 // Remote Headers
 #include <sstream>
@@ -31,7 +32,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 }
 
 Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, const int clientHeight)
-	: _debugPrompt(false)
+	: _debugMode(false)
 	, _paused(false)
 	, _minimized(false)
 	, _maximized(false)
@@ -41,24 +42,33 @@ Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, 
 	// be members of a class)
 	game = this;
 
-	_gameTimer = std::make_unique<GameTimer>();
+	_gameTimer    = std::make_unique<GameTimer>();
 	_clientWindow = std::make_unique<ClientWindow>(hInstance, WndProc, clientName, clientWidth, clientHeight);
-	_renderer = std::make_unique<Renderer>(*_clientWindow);
+	_renderer     = std::make_unique<Renderer>(*_clientWindow);
 	_inputHandler = std::make_unique<InputHandler>(*_clientWindow);
-	_scene = std::make_unique<Scene>(*_renderer, _camera);
+	_debugPrompt  = std::make_unique<DebugPrompt>(*_renderer, *_inputHandler);
+	_scene        = std::make_unique<Scene>(*_renderer, _camera, *_inputHandler, *_clientWindow);
 
 	_ship = std::make_shared<GameEntity>("ship_dps", _camera, *_inputHandler, *_renderer);
 	_scene->InsertEntity(_ship);
 
-	std::shared_ptr<DirectionalLight> dirLight = std::make_shared<DirectionalLight>();
+	auto dirLight = std::make_shared<DirectionalLight>();
 	dirLight->Ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
 	dirLight->Diffuse = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
 	dirLight->Specular = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
 	dirLight->Direction = XMFLOAT3(0.0f, 1.0f, -1.0f);
 
-	_scene->InsertDirectionalLight(dirLight);
+	//_scene->InsertDirectionalLight(dirLight);
 
-	std::shared_ptr<PointLight> pointLight = std::make_shared<PointLight>();
+	auto dirLight2 = std::make_shared<DirectionalLight>();
+	dirLight2->Ambient =  XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
+	dirLight2->Diffuse = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
+	dirLight2->Specular = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
+	dirLight2->Direction = XMFLOAT3(0.0f, 2.0f, 0.0f);
+
+	_scene->InsertDirectionalLight(dirLight2);
+
+	auto pointLight = std::make_shared<PointLight>();
 	pointLight->Ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
 	pointLight->Diffuse = XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f);
 	pointLight->Specular = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
@@ -94,9 +104,13 @@ void Game::Run()
 		{
 			CalculateFrameStats();
 
-			if (!_debugPrompt)
+			if (!_debugMode)
 			{
 				Update(_gameTimer->DeltaTime());
+			}
+			else
+			{
+				_debugPrompt->Update();
 			}
 			Render();
 			_inputHandler->OnFrameEnd();
@@ -232,7 +246,7 @@ LRESULT Game::MsgProc(HWND handle, UINT msg, WPARAM wParam, LPARAM lParam)
 		} break;
 
 		case WM_LBUTTONDOWN:
-		{
+		{			
 			_inputHandler->OnMouseDown(InputHandler::Button::LMBUTTON, lParam);
 		} break;
 
@@ -263,11 +277,18 @@ LRESULT Game::MsgProc(HWND handle, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		case WM_MBUTTONUP:
 		{
-			_debugPrompt = !_debugPrompt;
+			_debugMode = !_debugMode;
 		} break;
 
 		case WM_KEYDOWN:
 		{
+			if (_debugPrompt && _debugMode)
+			{
+				if ((_inputHandler->GetKey(wParam) != InputHandler::Key::BACKSPACE))
+				{
+					_debugPrompt->UpdateSingleKeyChar(MapVirtualKey(wParam, MAPVK_VK_TO_CHAR));
+				}
+			}			
 			_inputHandler->OnKeyDown(wParam, lParam);
 		} break;
 
@@ -287,18 +308,6 @@ void Game::OnResize()
 
 void Game::Update(const FLOAT deltaTime)
 {
-	if (_inputHandler->IsKeyDown(InputHandler::LEFT)) _camera.RotateCamera(Camera::LEFT, deltaTime * 4);
-	if (_inputHandler->IsKeyDown(InputHandler::RIGHT)) _camera.RotateCamera(Camera::RIGHT, deltaTime * 4);
-	if (_inputHandler->IsKeyDown(InputHandler::UP)) _camera.RotateCamera(Camera::UP, deltaTime * 4);
-	if (_inputHandler->IsKeyDown(InputHandler::DOWN)) _camera.RotateCamera(Camera::DOWN, deltaTime * 4);
-	if (_inputHandler->IsKeyDown(InputHandler::W)) _camera.MoveCamera(Camera::FORWARD, deltaTime * 4);
-	if (_inputHandler->IsKeyDown(InputHandler::A)) _camera.MoveCamera(Camera::LEFT, deltaTime * 4);
-	if (_inputHandler->IsKeyDown(InputHandler::S)) _camera.MoveCamera(Camera::BACKWARD, deltaTime * 4);
-	if (_inputHandler->IsKeyDown(InputHandler::D)) _camera.MoveCamera(Camera::RIGHT,  deltaTime* 4);
-	if (_inputHandler->IsKeyDown(InputHandler::Q)) _camera.MoveCamera(Camera::UP, deltaTime * 4);
-	if (_inputHandler->IsKeyDown(InputHandler::E)) _camera.MoveCamera(Camera::DOWN, deltaTime * 4);
-
-	_camera.Update(*_clientWindow);
 	_scene->Update(deltaTime);
 }
 
@@ -307,12 +316,17 @@ void Game::Render()
 	_renderer->ClearViews();
 	_scene->Render();
 
-	//_renderer->RenderText(shipVelX, XMFLOAT2(-1.0f, 0.95f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+	//_renderer->RenderText(dirLight2->Direction.y, XMFLOAT2(-1.0f, 0.95f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 	//_renderer->RenderText(std::to_string(_shipModel->GetTransform().translation.x) + ", " + std::to_string(_shipModel->GetTransform().translation.z), XMFLOAT2(-1.0f, 0.9f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 	
 	//_renderer->RenderText("Camera pos: " + std::to_string(_camera._pos.x) + ", " + std::to_string(_camera._pos.y) + ", " + std::to_string(_camera._pos.z), XMFLOAT2(-1.0f, 0.95f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 	//_renderer->RenderText("Camera pyr: " + std::to_string(_camera._pitch) + ", " + std::to_string(_camera._yaw) + ", " + std::to_string(_camera._roll), XMFLOAT2(-1.0f, 0.9f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 	
+	if (_debugMode)
+	{
+		_debugPrompt->Render();
+	}
+
 	_renderer->Present();
 }
 

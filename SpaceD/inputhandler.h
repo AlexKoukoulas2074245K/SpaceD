@@ -27,7 +27,20 @@ public:
 
 	enum Key
 	{
-		LEFT = 1, RIGHT = 2, UP = 4, DOWN = 8, W = 16, A = 32, S = 64, D = 128, E = 256, Q = 512
+		LEFT      = 0x00000001,
+		RIGHT     = 0x00000002,
+		UP        = 0x00000004,
+		DOWN      = 0x00000008,
+		W         = 0x00000010,
+		A         = 0x00000020,
+		S         = 0x00000040,
+		D         = 0x00000080,
+		E         = 0x00000100,
+		Q         = 0x00000200,
+		BACKSPACE = 0x00000400,
+		SPACE     = 0x00000800,
+		DOT       = 0x00001000,
+		COMMA     = 0x00002000
 	};
 
 	enum MouseWheelState
@@ -51,6 +64,8 @@ public:
 	MouseWheelState GetMouseWheelState() const;
 	const POINT& GetMousePos() const;
 	XMFLOAT2 GetMouseNDCCoords() const;
+
+	UINT GetKey(WPARAM wParam) const;
 
 	// Update Methods
 	void OnMouseDown(const Button button, LPARAM lParam);

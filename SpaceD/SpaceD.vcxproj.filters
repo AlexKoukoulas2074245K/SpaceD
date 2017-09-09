@@ -75,6 +75,9 @@
     <ClCompile Include="gameentities\gameentity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="util\debug\debugprompt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="util\clientwindow.h">
@@ -144,6 +147,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="rendering\lightdef.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="util\debug\debugprompt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

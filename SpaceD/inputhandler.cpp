@@ -24,12 +24,16 @@ InputHandler::InputHandler(const ClientWindow& window)
 	_winVkDictionary[VK_RIGHT] = Key::RIGHT;
 	_winVkDictionary[VK_UP]    = Key::UP;
 	_winVkDictionary[VK_DOWN]  = Key::DOWN;
+	_winVkDictionary[VK_BACK]  = Key::BACKSPACE;
+	_winVkDictionary[VK_SPACE] = Key::SPACE;
 	_winVkDictionary[0x41]     = Key::A;
 	_winVkDictionary[0x44]     = Key::D;
 	_winVkDictionary[0x45]     = Key::E;
 	_winVkDictionary[0x51]     = Key::Q;
 	_winVkDictionary[0x53]     = Key::S;
 	_winVkDictionary[0x57]     = Key::W;
+	_winVkDictionary[0xBC]     = Key::COMMA;
+	_winVkDictionary[0xBE]     = Key::DOT;
 }
 
 InputHandler::~InputHandler()
@@ -80,6 +84,15 @@ const POINT& InputHandler::GetMousePos() const
 XMFLOAT2 InputHandler::GetMouseNDCCoords() const
 {
 	return math::MouseToNDC(_mousePos.x, _mousePos.y, _clientWindow.GetWidth(), _clientWindow.GetHeight());
+}
+
+UINT InputHandler::GetKey(WPARAM wParam) const
+{
+	if (_winVkDictionary.count(wParam))
+	{
+		return _winVkDictionary.at(wParam);
+	}
+	return Key::SPACE;
 }
 
 void InputHandler::OnMouseDown(const Button button, LPARAM lParam)

@@ -18,11 +18,12 @@ class Renderer;
 class Camera;
 class Model;
 class GameEntity;
+class InputHandler;
 
 class Scene final
 {
 public:
-	Scene(Renderer& renderer, Camera& ref);
+	Scene(Renderer& renderer, Camera& camera, const InputHandler& inputHandler, const ClientWindow& window);
 	~Scene();
 
 	void InsertEntity(std::shared_ptr<GameEntity> entity);
@@ -72,6 +73,13 @@ private:
 
 private:
 	void ConstructScene();
+	
+	void UpdateCamera(const FLOAT deltaTime);
+	void UpdateEntities(const FLOAT deltaTime);
+
+	void DebugRenderScene();
+	void DebugRenderLights();
+	void RenderEntities();
 
 	bool IsOutOfBounds(const GameEntity& entity) const;
 	CellCoords GetCellCoords(const GameEntity& entity) const;
@@ -79,6 +87,8 @@ private:
 private:
 	Renderer& _renderer;
 	Camera& _camera;
+	const InputHandler& _inputHandler;
+	const ClientWindow& _window;
 
 	Cell _sceneGraph[CELL_ROWS][CELL_COLS];
 	std::vector<std::shared_ptr<GameEntity>> _outOfBoundsObjects;

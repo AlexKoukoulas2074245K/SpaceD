@@ -8,6 +8,7 @@
 // Local Headers
 #include "camera.h"
 #include "scene.h"
+#include "inputhandler.h"
 #include "gameentities/gameentity.h"
 #include "rendering/models/model.h"
 #include "rendering/textureloader.h"
@@ -21,9 +22,11 @@
 
 const FLOAT Scene::CELL_SIZE = 15.0f;
 
-Scene::Scene(Renderer& renderer, Camera& camera)
+Scene::Scene(Renderer& renderer, Camera& camera, const InputHandler& inputHandler, const ClientWindow& clientWindow)
 	: _renderer(renderer)
 	, _camera(camera)
+	, _inputHandler(inputHandler)
+	, _window(clientWindow)
 {
 	ConstructScene();
 	_sceneCellModel = std::make_unique<Model>("debug_scene_cell");
@@ -62,6 +65,52 @@ void Scene::InsertDirectionalLight(std::shared_ptr<DirectionalLight> directional
 
 void Scene::Update(const FLOAT deltaTime)
 {	
+	UpdateCamera(deltaTime);
+	UpdateEntities(deltaTime);
+}
+
+void Scene::Render()
+{
+#if defined(DEBUG) || defined(_DEBUG)
+ 	//DebugRenderScene();
+	DebugRenderLights();	
+#endif
+	RenderEntities();
+}
+
+void Scene::ConstructScene()
+{
+	_outOfBoundsObjects.clear();
+	_pointLights.clear();
+
+	for (auto y = 0U; y < CELL_ROWS; ++y)
+	{
+		for (auto x = 0U; x < CELL_COLS; ++x)
+		{
+			_sceneGraph[y][x]._x = x * CELL_SIZE - (CELL_COLS * CELL_SIZE)/2;
+			_sceneGraph[y][x]._z = y * CELL_SIZE - (CELL_ROWS * CELL_SIZE)/2;
+		}
+	}
+}
+
+void Scene::UpdateCamera(const FLOAT deltaTime)
+{
+	if (_inputHandler.IsKeyDown(InputHandler::LEFT)) _camera.RotateCamera(Camera::LEFT, deltaTime * 4);
+	if (_inputHandler.IsKeyDown(InputHandler::RIGHT)) _camera.RotateCamera(Camera::RIGHT, deltaTime * 4);
+	if (_inputHandler.IsKeyDown(InputHandler::UP)) _camera.RotateCamera(Camera::UP, deltaTime * 4);
+	if (_inputHandler.IsKeyDown(InputHandler::DOWN)) _camera.RotateCamera(Camera::DOWN, deltaTime * 4);
+	if (_inputHandler.IsKeyDown(InputHandler::W)) _camera.MoveCamera(Camera::FORWARD, deltaTime * 4);
+	if (_inputHandler.IsKeyDown(InputHandler::A)) _camera.MoveCamera(Camera::LEFT, deltaTime * 4);
+	if (_inputHandler.IsKeyDown(InputHandler::S)) _camera.MoveCamera(Camera::BACKWARD, deltaTime * 4);
+	if (_inputHandler.IsKeyDown(InputHandler::D)) _camera.MoveCamera(Camera::RIGHT, deltaTime * 4);
+	if (_inputHandler.IsKeyDown(InputHandler::Q)) _camera.MoveCamera(Camera::UP, deltaTime * 4);
+	if (_inputHandler.IsKeyDown(InputHandler::E)) _camera.MoveCamera(Camera::DOWN, deltaTime * 4);
+
+	_camera.Update(_window);
+}
+
+void Scene::UpdateEntities(const FLOAT deltaTime)
+{
 	// Transit objects ready to be inserted into the actual scene graph
 	std::unordered_map<UINT, std::shared_ptr<GameEntity>> residentsToBeAdded;
 
@@ -74,7 +123,7 @@ void Scene::Update(const FLOAT deltaTime)
 		entity->Update(deltaTime);
 
 		if (!IsOutOfBounds(*entity))
-		{			
+		{
 			const auto cellCoords = GetCellCoords(*entity);
 			_outOfBoundsObjects.erase(_outOfBoundsObjects.begin() + i);
 			residentsToBeAdded[cellCoords._row * CELL_ROWS + cellCoords._col] = entity;
@@ -121,10 +170,8 @@ void Scene::Update(const FLOAT deltaTime)
 	residentsToBeAdded.clear();
 }
 
-void Scene::Render()
+void Scene::DebugRenderScene()
 {
-#if defined (DEBUG) || defined (_DEBUG)
-
 	// Debug Scene Graph Rendering
 	_renderer.SetShader(Shader::ShaderType::DEFAULT_3D);
 	for (auto y = 0U; y < CELL_ROWS; ++y)
@@ -152,8 +199,24 @@ void Scene::Render()
 			_renderer.RenderModel(*_sceneCellModel, &cb);
 		}
 	}
-#endif
+}
 
+void Scene::DebugRenderLights()
+{
+	_renderer.SetShader(Shader::ShaderType::DEFAULT_3D);
+
+	const auto pointLightCount = _pointLights.size();
+
+	for (auto i = 0U; i < pointLightCount; ++i)
+	{
+		auto pointLight = _pointLights[i];
+
+		_renderer.RenderPointLight(pointLight->Position, pointLight->Range, _camera.GetViewMatrix(), _camera.GetProjectionMatrix());
+	}
+}
+
+void Scene::RenderEntities()
+{
 	_renderer.SetShader(Shader::ShaderType::DEFAULT_3D_WITH_LIGHTING);
 
 	// Accumulate Lights
@@ -168,16 +231,11 @@ void Scene::Render()
 	}
 
 	for (auto i = 0U; i < pointLightCount; ++i)
-	{
-		auto pointLight = _pointLights[i];
-		cb.gPointLights[cb.gPointLightCount++] = *pointLight;
-
-#if defined(DEBUG) || defined(_DEBUG)
-		// Render Debug Point Light
-		_renderer.RenderPointLight(pointLight->Position, pointLight->Range, _camera.GetViewMatrix(), _camera.GetProjectionMatrix());
-#endif
+	{		
+		cb.gPointLights[cb.gPointLightCount++] = *_pointLights[i];
 	}
-	
+
+	// Render entities
 	for (auto y = 0U; y < CELL_ROWS; ++y)
 	{
 		for (auto x = 0U; x < CELL_COLS; ++x)
@@ -189,7 +247,7 @@ void Scene::Render()
 				const auto worldMatrix = entity->GetModel().CalculateWorldMatrix();
 
 				auto wvp = worldMatrix * _camera.GetViewMatrix() * _camera.GetProjectionMatrix();
-				
+
 				cb.gEyePosW = _camera.GetPos();
 				cb.gMaterial = entity->GetModel().GetMaterial();
 				cb.gDirectionalLightCount = _directionalLights.size();
@@ -203,22 +261,6 @@ void Scene::Render()
 					_renderer.RenderModel(entity->GetModel(), &cb);
 				}
 			}
-		}
-	}
-
-}
-
-void Scene::ConstructScene()
-{
-	_outOfBoundsObjects.clear();
-	_pointLights.clear();
-
-	for (auto y = 0U; y < CELL_ROWS; ++y)
-	{
-		for (auto x = 0U; x < CELL_COLS; ++x)
-		{
-			_sceneGraph[y][x]._x = x * CELL_SIZE - (CELL_COLS * CELL_SIZE)/2;
-			_sceneGraph[y][x]._z = y * CELL_SIZE - (CELL_ROWS * CELL_SIZE)/2;
 		}
 	}
 }
