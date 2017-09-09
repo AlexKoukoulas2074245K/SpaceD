@@ -21,6 +21,7 @@ class Default3dWithLightingShader: public Shader
 
 public:
 	static const UINT MAX_POINT_LIGHTS = 16U;
+	static const UINT MAX_DIRECTIONAL_LIGHTS = 4U;
 
 public:
 	struct ConstantBuffer
@@ -29,11 +30,13 @@ public:
 		XMMATRIX gWorldInvTranspose;
 		XMMATRIX gWorldViewProj;
 		Material gMaterial;
-		DirectionalLight gDirLight;
+		DirectionalLight gDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 		PointLight gPointLights[MAX_POINT_LIGHTS];
 		SpotLight gSpotLight;
 		XMFLOAT3 gEyePosW;
+		int gDirectionalLightCount;
 		int gPointLightCount;
+		XMFLOAT3 gPad;
 	};
 
 public:

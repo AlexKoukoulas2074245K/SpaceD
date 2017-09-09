@@ -48,7 +48,25 @@ Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, 
 	_scene        = std::make_unique<Scene>(*_renderer, _camera);
 
 	_ship = std::make_shared<GameEntity>("ship_dps", _camera, *_inputHandler, *_renderer);	
-	_scene->InsertObect(_ship);
+	_scene->InsertEntity(_ship);
+
+	std::shared_ptr<DirectionalLight> dirLight = std::make_shared<DirectionalLight>();
+    dirLight->Ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
+	dirLight->Diffuse = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
+	dirLight->Specular = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
+	dirLight->Direction = XMFLOAT3(0.0f, 1.0f, -1.0f);
+
+	_scene->InsertDirectionalLight(dirLight);
+
+	std::shared_ptr<PointLight> pointLight = std::make_shared<PointLight>();
+	pointLight->Ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	pointLight->Diffuse = XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f);
+	pointLight->Specular = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
+	pointLight->Att = XMFLOAT3(0.0f, 0.0f, 0.1f);
+	pointLight->Position = XMFLOAT3(-20.0f, 0.0f, -20.0f);
+	pointLight->Range = 8.0f;
+
+	_scene->InsertPointLight(pointLight);
 }
 
 Game::~Game()

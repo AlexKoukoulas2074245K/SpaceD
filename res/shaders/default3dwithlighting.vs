@@ -55,11 +55,13 @@ cbuffer cbPerObject
 	float4x4 gWorldInvTranspose;    
 	float4x4 gWorldViewProj;	    
 	Material gMaterial;             
-	DirectionalLight gDirLight;     
+	DirectionalLight gDirectionalLights[4];     
 	PointLight gPointLights[16];         
 	SpotLight gSpotLight;           
 	float3 gEyePosW;
+	int gDirectionalLightCount;
 	int gPointLightCount; 
+	float3 gPad;
 }; 
 
 

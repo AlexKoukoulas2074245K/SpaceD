@@ -7,6 +7,7 @@
 
 // Local Headers
 #include "rendering/d3dcommon.h"
+#include "rendering/lightdef.h"
 #include "util/math.h"
 
 // Remote Headers
@@ -24,7 +25,10 @@ public:
 	Scene(Renderer& renderer, Camera& ref);
 	~Scene();
 
-	void InsertObect(std::shared_ptr<GameEntity> entity);
+	void InsertEntity(std::shared_ptr<GameEntity> entity);
+	void InsertPointLight(std::shared_ptr<PointLight> pointLight);
+	void InsertDirectionalLight(std::shared_ptr<DirectionalLight> directionalLight);
+
 	void Update(const FLOAT deltaTime);
 	void Render();
 
@@ -78,6 +82,8 @@ private:
 
 	Cell _sceneGraph[CELL_ROWS][CELL_COLS];
 	std::vector<std::shared_ptr<GameEntity>> _outOfBoundsObjects;
+	std::vector<std::shared_ptr<PointLight>> _pointLights;
+	std::vector<std::shared_ptr<DirectionalLight>> _directionalLights;
 
 	std::unique_ptr<Model> _sceneCellModel;
 

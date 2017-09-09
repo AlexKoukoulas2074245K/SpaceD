@@ -37,7 +37,7 @@ Scene::~Scene()
 {
 }
 
-void Scene::InsertObect(std::shared_ptr<GameEntity> entity)
+void Scene::InsertEntity(std::shared_ptr<GameEntity> entity)
 {		
 	if (IsOutOfBounds(*entity))
 	{
@@ -48,6 +48,16 @@ void Scene::InsertObect(std::shared_ptr<GameEntity> entity)
 	const auto cellCoords = GetCellCoords(*entity);
 	
 	_sceneGraph[cellCoords._row][cellCoords._col]._residents.push_back(entity);
+}
+
+void Scene::InsertPointLight(std::shared_ptr<PointLight> pointLight)
+{
+	_pointLights.push_back(pointLight);
+}
+
+void Scene::InsertDirectionalLight(std::shared_ptr<DirectionalLight> directionalLight)
+{
+	_directionalLights.push_back(directionalLight);
 }
 
 void Scene::Update(const FLOAT deltaTime)
@@ -114,6 +124,8 @@ void Scene::Update(const FLOAT deltaTime)
 void Scene::Render()
 {
 #if defined (DEBUG) || defined (_DEBUG)
+
+	// Debug Scene Graph Rendering
 	_renderer.SetShader(Shader::ShaderType::DEFAULT_3D);
 	for (auto y = 0U; y < CELL_ROWS; ++y)
 	{
@@ -137,22 +149,35 @@ void Scene::Render()
 			cb.gWorldInvTranspose = math::InverseTranspose(cb.gWorld);
 			cb.gWorldViewProj = cb.gWorld * _camera.GetViewMatrix() * _camera.GetProjectionMatrix();
 
-			//_renderer.RenderModel(*_sceneCellModel, &cb);
+			_renderer.RenderModel(*_sceneCellModel, &cb);
 		}
 	}
-	
-	// Render Debug Lights
-	for (auto y = 0U; y < 4; ++y)
-	{
-		for (auto x = 0U; x < 4; ++x)
-		{
-			_renderer.RenderDebugSphere(XMFLOAT3(-20.0f + x * 10.0f, 0.0f, -20.0f + y * 10.0f), XMFLOAT3(16.0f, 16.0f, 16.0f), _camera.GetViewMatrix(), _camera.GetProjectionMatrix());
-		}
-	}
-
 #endif
 
 	_renderer.SetShader(Shader::ShaderType::DEFAULT_3D_WITH_LIGHTING);
+
+	// Accumulate Lights
+	Default3dWithLightingShader::ConstantBuffer cb = {};
+
+	const auto directionalLightCount = _directionalLights.size();
+	const auto pointLightCount = _pointLights.size();
+
+	for (auto i = 0U; i < directionalLightCount; ++i)
+	{
+		cb.gDirectionalLights[cb.gDirectionalLightCount++] = *_directionalLights[i];
+	}
+
+	for (auto i = 0U; i < pointLightCount; ++i)
+	{
+		auto pointLight = _pointLights[i];
+		cb.gPointLights[cb.gPointLightCount++] = *pointLight;
+
+#if defined(DEBUG) || defined(_DEBUG)
+		// Render Debug Point Light
+		_renderer.RenderPointLight(pointLight->Position, pointLight->Range, _camera.GetViewMatrix(), _camera.GetProjectionMatrix());
+#endif
+	}
+	
 	for (auto y = 0U; y < CELL_ROWS; ++y)
 	{
 		for (auto x = 0U; x < CELL_COLS; ++x)
@@ -164,38 +189,19 @@ void Scene::Render()
 				const auto worldMatrix = entity->GetModel().CalculateWorldMatrix();
 
 				auto wvp = worldMatrix * _camera.GetViewMatrix() * _camera.GetProjectionMatrix();
-
-				Default3dWithLightingShader::ConstantBuffer cb;
+				
 				cb.gEyePosW = _camera.GetPos();
 
 				cb.gMaterial.Ambient = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
 				cb.gMaterial.Diffuse = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
 				cb.gMaterial.Specular = XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
 
-				cb.gDirLight.Ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
-				cb.gDirLight.Diffuse = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
-				cb.gDirLight.Specular = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
-				cb.gDirLight.Direction = XMFLOAT3(0.0f, 1.0f, -1.0f);
-
-				cb.gPointLightCount = Default3dWithLightingShader::MAX_POINT_LIGHTS;
-				for (auto y = 0U; y < 4; ++y)
-			    {
-					for (auto x = 0U; x < 4; ++x)
-					{
-						cb.gPointLights[y * 4 + x].Ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
-						cb.gPointLights[y * 4 + x].Diffuse = XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f);
-						cb.gPointLights[y * 4 + x].Specular = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-						cb.gPointLights[y * 4 + x].Att = XMFLOAT3(0.0f, 0.0f, 0.1f);
-						cb.gPointLights[y * 4 + x].Position = XMFLOAT3(-20.0f + x * 10.0f, 0.0f, -20.0f + y * 10.0f);
-						cb.gPointLights[y * 4 + x].Range = 8.0f;
-					}
-				}
+				cb.gDirectionalLightCount = _directionalLights.size();
+				cb.gPointLightCount = _pointLights.size();
 				
 				cb.gWorld = worldMatrix;
 				cb.gWorldInvTranspose = math::InverseTranspose(worldMatrix);
 				cb.gWorldViewProj = wvp;
-
-				//_renderer->RenderDebugSphere(cb.gPointLight.Position, XMFLOAT3(4.0f, 4.0f, 4.0f), viewMatrix, projMatrix);
 
 				if (_camera.isVisible(entity->GetModel()))
 				{
@@ -209,6 +215,9 @@ void Scene::Render()
 
 void Scene::ConstructScene()
 {
+	_outOfBoundsObjects.clear();
+	_pointLights.clear();
+
 	for (auto y = 0U; y < CELL_ROWS; ++y)
 	{
 		for (auto x = 0U; x < CELL_COLS; ++x)
