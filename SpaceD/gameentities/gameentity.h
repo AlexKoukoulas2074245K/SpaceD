@@ -15,16 +15,14 @@
 
 // Forward Declarations
 class Model;
-class Renderer;
-class Camera;
-class InputHandler;
 class DebugPrompt;
+class Renderer;
 
 class GameEntity
 {
 	friend class DebugPrompt;
 public:
-	GameEntity(const std::string& modelName, const Camera& camera, const InputHandler& inputHandler, Renderer& renderer);
+	GameEntity(const std::string& modelName, Renderer& renderer);
 	virtual ~GameEntity();
 
 	virtual void Update(const FLOAT deltaTime);
@@ -40,11 +38,9 @@ public:
 	const XMFLOAT3& GetRotation() const;
 
 private:
-	void LoadModel(const std::string& modelName);
+	void LoadModel(const std::string& modelName, Renderer& renderer);
 
 protected:
-	std::unique_ptr<Model> _model;	
-	const Camera& _camera;
-	const InputHandler& _inputHandler;
-	Renderer& _renderer;
+	std::unique_ptr<Model> _model;		
+
 };

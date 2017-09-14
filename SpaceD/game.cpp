@@ -10,7 +10,7 @@
 #include "scene.h"
 #include "rendering/objloader.h"
 #include "rendering/renderer.h"
-#include "gameentities/gameentity.h"
+#include "gameentities/playershipgameentity.h"
 #include "util/clientwindow.h"
 #include "util/gametimer.h"
 #include "util/math.h"
@@ -49,7 +49,7 @@ Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, 
 	_scene        = std::make_unique<Scene>(*_renderer, _camera, *_inputHandler, *_clientWindow);
 	_debugPrompt  = std::make_unique<DebugPrompt>(*_renderer, *_scene, *_inputHandler);
 
-	_ship = std::make_shared<GameEntity>("ship_dps", _camera, *_inputHandler, *_renderer);
+	_ship = std::make_shared<PlayerShipGameEntity>(*_renderer, _camera, *_inputHandler);
 	_scene->InsertEntity(_ship);
 
 	auto dirLight = std::make_shared<DirectionalLight>();

@@ -78,6 +78,12 @@
     <ClCompile Include="util\debug\debugprompt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="gameentities\shipgameentity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gameentities\playershipgameentity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="util\clientwindow.h">
@@ -150,6 +156,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="util\debug\debugprompt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gameentities\shipgameentity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gameentities\playershipgameentity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
