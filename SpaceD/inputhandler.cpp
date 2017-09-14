@@ -20,20 +20,21 @@ InputHandler::InputHandler(const ClientWindow& window)
 	, _mousePos()
 	, _mouseWheelState(MouseWheelState::NEUTRAL)
 {
-	_winVkDictionary[VK_LEFT]  = Key::LEFT;
-	_winVkDictionary[VK_RIGHT] = Key::RIGHT;
-	_winVkDictionary[VK_UP]    = Key::UP;
-	_winVkDictionary[VK_DOWN]  = Key::DOWN;
-	_winVkDictionary[VK_BACK]  = Key::BACKSPACE;
-	_winVkDictionary[VK_SPACE] = Key::SPACE;
-	_winVkDictionary[0x41]     = Key::A;
-	_winVkDictionary[0x44]     = Key::D;
-	_winVkDictionary[0x45]     = Key::E;
-	_winVkDictionary[0x51]     = Key::Q;
-	_winVkDictionary[0x53]     = Key::S;
-	_winVkDictionary[0x57]     = Key::W;
-	_winVkDictionary[0xBC]     = Key::COMMA;
-	_winVkDictionary[0xBE]     = Key::DOT;
+	_winVkDictionary[VK_LEFT]   = Key::LEFT;
+	_winVkDictionary[VK_RIGHT]  = Key::RIGHT;
+	_winVkDictionary[VK_UP]     = Key::UP;
+	_winVkDictionary[VK_DOWN]   = Key::DOWN;
+	_winVkDictionary[VK_BACK]   = Key::BACKSPACE;
+	_winVkDictionary[VK_SPACE]  = Key::SPACE;
+	_winVkDictionary[VK_RETURN] = Key::ENTER;
+	_winVkDictionary[0x41]      = Key::A;
+	_winVkDictionary[0x44]      = Key::D;
+	_winVkDictionary[0x45]      = Key::E;
+	_winVkDictionary[0x51]      = Key::Q;
+	_winVkDictionary[0x53]      = Key::S;
+	_winVkDictionary[0x57]      = Key::W;
+	_winVkDictionary[0xBC]      = Key::COMMA;
+	_winVkDictionary[0xBE]      = Key::DOT;
 }
 
 InputHandler::~InputHandler()

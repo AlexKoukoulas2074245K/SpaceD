@@ -19,16 +19,28 @@ class Camera;
 class Model;
 class GameEntity;
 class InputHandler;
+class ClientWindow;
+class DebugPrompt;
 
 class Scene final
 {
-public:
+public:	
+	friend class DebugPrompt;
+
 	Scene(Renderer& renderer, Camera& camera, const InputHandler& inputHandler, const ClientWindow& window);
 	~Scene();
 
 	void InsertEntity(std::shared_ptr<GameEntity> entity);
 	void InsertPointLight(std::shared_ptr<PointLight> pointLight);
 	void InsertDirectionalLight(std::shared_ptr<DirectionalLight> directionalLight);
+
+	std::shared_ptr<GameEntity> GetEntityByIndex(const UINT entityIndex) const;	
+	std::shared_ptr<PointLight> GetPointLightByIndex(const UINT pointLightIndex) const;
+	std::shared_ptr<DirectionalLight> GetDirectionalLightByIndex(const UINT directionalLightIndex) const;
+
+	void RemoveEntityByIndex(const UINT entityIndex);
+	void RemovePointLightByIndex(const UINT pointLightIndex);
+	void RemoveDirectionalLightByIndex(const UINT dirLightIndex);
 
 	void Update(const FLOAT deltaTime);
 	void Render();

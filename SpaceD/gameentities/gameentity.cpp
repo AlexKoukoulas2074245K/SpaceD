@@ -13,6 +13,7 @@
 #include "../rendering/renderer.h"
 
 // Remote Headers
+#include <sstream>
 
 GameEntity::GameEntity(const std::string& modelName, const Camera& camera, const InputHandler& inputHandler, Renderer& renderer)
 	: _camera(camera)
@@ -106,6 +107,37 @@ void GameEntity::Update(const FLOAT deltaTime)
 			rotRight = false;
 		}
 	}
+}
+
+std::string GameEntity::GetBriefDescription() const
+{
+	std::stringstream descStream;
+	descStream << "GameEntity at " << GetTranslation().x << ", " << GetTranslation().y << ", " << GetTranslation().z;
+	return descStream.str();
+}
+
+std::vector<std::string> GameEntity::GetDetailedDescription() const
+{
+	std::vector<std::string> descVector;
+
+	std::stringstream transDescStream;
+	transDescStream << "Translation: " << GetTranslation().x << ", " << GetTranslation().y << ", " << GetTranslation().z;
+
+	std::stringstream rotDescStream;
+	rotDescStream   << "Rotation:    " << GetRotation().x << ", " << GetRotation().y << ", " << GetRotation().z;
+
+	std::stringstream scaleDescStream;
+	scaleDescStream << "Scale:       " << GetScale().x << ", " << GetScale().y << ", " << GetScale().z;
+
+	std::stringstream dimsDescStream;
+	dimsDescStream  << "Dimensions:  " << GetDimensions()._width << ", " << GetDimensions()._height << ", " << GetDimensions()._depth;
+
+	descVector.push_back(transDescStream.str());
+	descVector.push_back(rotDescStream.str());
+	descVector.push_back(scaleDescStream.str());
+	descVector.push_back(dimsDescStream.str());
+
+	return descVector;
 }
 
 const Model& GameEntity::GetModel() const

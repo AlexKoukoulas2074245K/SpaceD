@@ -46,35 +46,35 @@ Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, 
 	_clientWindow = std::make_unique<ClientWindow>(hInstance, WndProc, clientName, clientWidth, clientHeight);
 	_renderer     = std::make_unique<Renderer>(*_clientWindow);
 	_inputHandler = std::make_unique<InputHandler>(*_clientWindow);
-	_debugPrompt  = std::make_unique<DebugPrompt>(*_renderer, *_inputHandler);
 	_scene        = std::make_unique<Scene>(*_renderer, _camera, *_inputHandler, *_clientWindow);
+	_debugPrompt  = std::make_unique<DebugPrompt>(*_renderer, *_scene, *_inputHandler);
 
 	_ship = std::make_shared<GameEntity>("ship_dps", _camera, *_inputHandler, *_renderer);
 	_scene->InsertEntity(_ship);
 
 	auto dirLight = std::make_shared<DirectionalLight>();
-	dirLight->Ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
-	dirLight->Diffuse = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
-	dirLight->Specular = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
-	dirLight->Direction = XMFLOAT3(0.0f, 1.0f, -1.0f);
+	dirLight->_ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
+	dirLight->_diffuse = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
+	dirLight->_specular = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
+	dirLight->_direction = XMFLOAT3(0.0f, 1.0f, -1.0f);
 
-	//_scene->InsertDirectionalLight(dirLight);
+	_scene->InsertDirectionalLight(dirLight);
 
 	auto dirLight2 = std::make_shared<DirectionalLight>();
-	dirLight2->Ambient =  XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
-	dirLight2->Diffuse = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
-	dirLight2->Specular = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
-	dirLight2->Direction = XMFLOAT3(0.0f, 2.0f, 0.0f);
+	dirLight2->_ambient =  XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
+	dirLight2->_diffuse = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
+	dirLight2->_specular = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
+	dirLight2->_direction = XMFLOAT3(0.0f, 2.0f, 0.0f);
 
 	_scene->InsertDirectionalLight(dirLight2);
 
 	auto pointLight = std::make_shared<PointLight>();
-	pointLight->Ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
-	pointLight->Diffuse = XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f);
-	pointLight->Specular = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-	pointLight->Att = XMFLOAT3(0.0f, 0.0f, 0.1f);
-	pointLight->Position = XMFLOAT3(-20.0f, 0.0f, -20.0f);
-	pointLight->Range = 8.0f;
+	pointLight->_ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	pointLight->_diffuse = XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f);
+	pointLight->_specular = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
+	pointLight->_att = XMFLOAT3(0.0f, 0.0f, 0.1f);
+	pointLight->_position = XMFLOAT3(-20.0f, 0.0f, -20.0f);
+	pointLight->_range = 8.0f;
 
 	_scene->InsertPointLight(pointLight);
 }
@@ -275,19 +275,17 @@ LRESULT Game::MsgProc(HWND handle, UINT msg, WPARAM wParam, LPARAM lParam)
 			_inputHandler->OnMouseWheelMove(wParam, lParam);
 		} break;
 
+#if defined(DEBUG) || defined(_DEBUG)
 		case WM_MBUTTONUP:
 		{
 			_debugMode = !_debugMode;
 		} break;
-
+#endif
 		case WM_KEYDOWN:
 		{
 			if (_debugPrompt && _debugMode)
 			{
-				if ((_inputHandler->GetKey(wParam) != InputHandler::Key::BACKSPACE))
-				{
-					_debugPrompt->UpdateSingleKeyChar(MapVirtualKey(wParam, MAPVK_VK_TO_CHAR));
-				}
+				_debugPrompt->UpdateSingleKeyChar(MapVirtualKey(wParam, MAPVK_VK_TO_CHAR), wParam);		
 			}			
 			_inputHandler->OnKeyDown(wParam, lParam);
 		} break;

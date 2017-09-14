@@ -55,12 +55,94 @@ void Scene::InsertEntity(std::shared_ptr<GameEntity> entity)
 
 void Scene::InsertPointLight(std::shared_ptr<PointLight> pointLight)
 {
-	_pointLights.push_back(pointLight);
+	if (_pointLights.size() + 1 <= Default3dWithLightingShader::MAX_POINT_LIGHTS)
+	{
+		_pointLights.push_back(pointLight);
+	}
 }
 
 void Scene::InsertDirectionalLight(std::shared_ptr<DirectionalLight> directionalLight)
 {
-	_directionalLights.push_back(directionalLight);
+	if (_directionalLights.size() + 1 <= Default3dWithLightingShader::MAX_DIRECTIONAL_LIGHTS)
+	{
+		_directionalLights.push_back(directionalLight);
+	}
+}
+
+std::shared_ptr<GameEntity> Scene::GetEntityByIndex(const UINT entityIndex) const
+{
+	auto indexCounter = 0;
+
+	for (auto y = 0U; y < CELL_ROWS; ++y)
+	{
+		for (auto x = 0U; x < CELL_COLS; ++x)
+		{
+			const auto residentCount = _sceneGraph[y][x]._residents.size();
+			for (auto i = 0U; i < residentCount; ++i)
+			{
+				if (indexCounter++ == entityIndex)
+				{
+					return _sceneGraph[y][x]._residents[i];
+				}
+			}
+		}
+	}
+	return nullptr;
+}
+
+std::shared_ptr<PointLight> Scene::GetPointLightByIndex(const UINT pointLightIndex) const
+{
+	if (pointLightIndex < _pointLights.size())
+	{
+		return _pointLights[pointLightIndex];
+	}
+	return nullptr;
+}
+
+std::shared_ptr<DirectionalLight> Scene::GetDirectionalLightByIndex(const UINT directionalLightIndex) const
+{
+	if (directionalLightIndex < _directionalLights.size())
+	{
+		return _directionalLights[directionalLightIndex];
+	}
+	return nullptr;
+}
+
+void Scene::RemoveEntityByIndex(const UINT entityIndex)
+{
+	auto indexCounter = 0;
+
+	for (auto y = 0U; y < CELL_ROWS; ++y)
+	{
+		for (auto x = 0U; x < CELL_COLS; ++x)
+		{
+			const auto residentCount = _sceneGraph[y][x]._residents.size();
+			for (auto i = 0U; i < residentCount; ++i)
+			{
+				if (indexCounter++ == entityIndex)
+				{
+					_sceneGraph[y][x]._residents.erase(_sceneGraph[y][x]._residents.begin() + i);
+					return;
+				}
+			}
+		}
+	}	
+}
+
+void Scene::RemovePointLightByIndex(const UINT pointLightIndex)
+{
+	if (pointLightIndex < _pointLights.size())
+	{
+		_pointLights.erase(_pointLights.begin() + pointLightIndex);	
+	}
+}
+
+void Scene::RemoveDirectionalLightByIndex(const UINT dirLightIndex)
+{
+	if (dirLightIndex < _directionalLights.size())
+	{
+		_directionalLights.erase(_directionalLights.begin() + dirLightIndex);
+	}	
 }
 
 void Scene::Update(const FLOAT deltaTime)
@@ -211,7 +293,7 @@ void Scene::DebugRenderLights()
 	{
 		auto pointLight = _pointLights[i];
 
-		_renderer.RenderPointLight(pointLight->Position, pointLight->Range, _camera.GetViewMatrix(), _camera.GetProjectionMatrix());
+		_renderer.RenderPointLight(pointLight->_position, pointLight->_range, _camera.GetViewMatrix(), _camera.GetProjectionMatrix());
 	}
 }
 

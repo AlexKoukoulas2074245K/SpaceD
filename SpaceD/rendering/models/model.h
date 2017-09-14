@@ -17,12 +17,14 @@
 
 class GameEntity;
 class Scene;
+class DebugPrompt;
 
 class Model
 {
 public:
 	friend class GameEntity;
 	friend class Scene;
+    friend class DebugPrompt;
 
 	Model(const std::string& modelName);
 	virtual ~Model();

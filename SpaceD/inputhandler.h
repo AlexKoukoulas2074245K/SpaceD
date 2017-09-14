@@ -40,7 +40,8 @@ public:
 		BACKSPACE = 0x00000400,
 		SPACE     = 0x00000800,
 		DOT       = 0x00001000,
-		COMMA     = 0x00002000
+		COMMA     = 0x00002000,
+		ENTER     = 0x00004000
 	};
 
 	enum MouseWheelState

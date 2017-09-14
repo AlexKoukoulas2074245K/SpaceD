@@ -90,9 +90,9 @@ std::shared_ptr<OBJLoader::ModelData> OBJLoader::LoadOBJData(const std::string& 
 	FLOAT maxZ = 0.0f;
 	
 	Material mat;
-	mat.Ambient  = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	mat.Diffuse  = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	mat.Specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	mat._ambient  = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	mat._diffuse  = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	mat._specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	std::string line;
 	while (std::getline(fileStream, line))
@@ -110,26 +110,26 @@ std::shared_ptr<OBJLoader::ModelData> OBJLoader::LoadOBJData(const std::string& 
 			// Ambient entry
 			if (line[1] == 'a')
 			{
-				mat.Ambient = XMFLOAT4(std::stof(lineSplitBySpace[1]),
-					                   std::stof(lineSplitBySpace[2]),
-					                   std::stof(lineSplitBySpace[3]),
-					                   std::stof(lineSplitBySpace[4]));
+				mat._ambient = XMFLOAT4(std::stof(lineSplitBySpace[1]),
+					                    std::stof(lineSplitBySpace[2]),
+					                    std::stof(lineSplitBySpace[3]),
+					                    std::stof(lineSplitBySpace[4]));
 			}
 			// Diffuse entry
 			else if (line[1] == 'd')
 			{
-				mat.Diffuse = XMFLOAT4(std::stof(lineSplitBySpace[1]),
-					                   std::stof(lineSplitBySpace[2]),
-					                   std::stof(lineSplitBySpace[3]),
-					                   std::stof(lineSplitBySpace[4]));
+				mat._diffuse = XMFLOAT4(std::stof(lineSplitBySpace[1]),
+					                    std::stof(lineSplitBySpace[2]),
+					                    std::stof(lineSplitBySpace[3]),
+					                    std::stof(lineSplitBySpace[4]));
 			}
 			// Specular entry
 			else
 			{
-				mat.Specular = XMFLOAT4(std::stof(lineSplitBySpace[1]),
-					                    std::stof(lineSplitBySpace[2]),
-					                    std::stof(lineSplitBySpace[3]),
-					                    std::stof(lineSplitBySpace[4]));
+				mat._specular = XMFLOAT4(std::stof(lineSplitBySpace[1]),
+					                     std::stof(lineSplitBySpace[2]),
+					                     std::stof(lineSplitBySpace[3]),
+					                     std::stof(lineSplitBySpace[4]));
 			}
 		}
 

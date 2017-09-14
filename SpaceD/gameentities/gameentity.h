@@ -10,6 +10,7 @@
 
 // Remote Headers
 #include <string>
+#include <vector>
 #include <memory>
 
 // Forward Declarations
@@ -17,14 +18,19 @@ class Model;
 class Renderer;
 class Camera;
 class InputHandler;
+class DebugPrompt;
 
 class GameEntity
 {
+	friend class DebugPrompt;
 public:
 	GameEntity(const std::string& modelName, const Camera& camera, const InputHandler& inputHandler, Renderer& renderer);
 	virtual ~GameEntity();
 
 	virtual void Update(const FLOAT deltaTime);
+
+	virtual std::string GetBriefDescription() const;
+	virtual std::vector<std::string> GetDetailedDescription() const;
 
 	const Model& GetModel() const;
 	const math::Transform& GetTransform() const;
