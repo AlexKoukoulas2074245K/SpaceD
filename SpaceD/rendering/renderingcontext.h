@@ -30,6 +30,7 @@ private:
 	void InitD3D();
 	void OnResize();
 	void SetWireframe(const bool wireframe);
+	void SetDepthStencilEnabled(const bool depthEnabled);
 
 private:
 	comptr<ID3D11Device> _device;
@@ -42,6 +43,8 @@ private:
 	comptr<ID3D11BlendState> _blendState;
 	comptr<ID3D11RasterizerState> _defaultRastState;
 	comptr<ID3D11RasterizerState> _wireframeRastState;
+	comptr<ID3D11DepthStencilState> _depthStencilEnabledState;
+	comptr<ID3D11DepthStencilState> _depthStencilDisabledState;
 
 	D3D11_VIEWPORT _screenViewport;
 

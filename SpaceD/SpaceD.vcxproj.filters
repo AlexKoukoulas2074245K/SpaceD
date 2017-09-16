@@ -84,6 +84,9 @@
     <ClCompile Include="gameentities\playershipgameentity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="gameentities\projectilegameentity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="util\clientwindow.h">
@@ -162,6 +165,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="gameentities\playershipgameentity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gameentities\projectilegameentity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

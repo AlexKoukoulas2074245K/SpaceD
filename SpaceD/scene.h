@@ -88,6 +88,7 @@ private:
 	
 	void UpdateCamera(const FLOAT deltaTime);
 	void UpdateEntities(const FLOAT deltaTime);
+	void UpdateBackground(const FLOAT deltaTime);
 
 	void DebugRenderScene();
 	void DebugRenderLights();
@@ -106,9 +107,11 @@ private:
 	std::vector<std::shared_ptr<GameEntity>> _outOfBoundsObjects;
 	std::vector<std::shared_ptr<PointLight>> _pointLights;
 	std::vector<std::shared_ptr<DirectionalLight>> _directionalLights;
-
+	std::unique_ptr<Model> _background;
 	std::unique_ptr<Model> _sceneCellModel;
 
 	comptr<ID3D11ShaderResourceView> _defaultCellTexture;
 	comptr<ID3D11ShaderResourceView> _activatedCellTexture;
+
+	XMFLOAT2 _backgroundOffset;
 };

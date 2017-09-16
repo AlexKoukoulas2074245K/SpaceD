@@ -46,7 +46,7 @@ void Renderer::ClearViews()
 
 void Renderer::Present()
 {
-	HR(_renderingContext->_swapChain->Present(0, 0));
+	HR(_renderingContext->_swapChain->Present(1, 0));
 }
 
 void Renderer::SetShader(const Shader::ShaderType shader)
@@ -161,6 +161,11 @@ comptr<ID3D11Device> Renderer::GetDevice() const
 comptr<ID3D11DeviceContext> Renderer::GetDeviceContext() const
 {
 	return _renderingContext->_deviceContext;
+}
+
+void Renderer::SetDepthStencilEnabled(const bool depthStencilEnabled)
+{
+	_renderingContext->SetDepthStencilEnabled(depthStencilEnabled);
 }
 
 void Renderer::LoadShaders()

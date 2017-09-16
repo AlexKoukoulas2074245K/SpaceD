@@ -10,7 +10,7 @@
 
 // Remote Headers
 
-class GlyphModel: public Model
+class GlyphModel final: public Model
 {
 public:
 	GlyphModel(const std::string& glyphName, const std::vector<XMFLOAT2>& glyphTexcoords);

@@ -10,6 +10,7 @@
 #include "scene.h"
 #include "rendering/objloader.h"
 #include "rendering/renderer.h"
+#include "rendering/models/model.h"
 #include "gameentities/playershipgameentity.h"
 #include "util/clientwindow.h"
 #include "util/gametimer.h"
@@ -49,34 +50,16 @@ Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, 
 	_scene        = std::make_unique<Scene>(*_renderer, _camera, *_inputHandler, *_clientWindow);
 	_debugPrompt  = std::make_unique<DebugPrompt>(*_renderer, *_scene, *_inputHandler);
 
-	_ship = std::make_shared<PlayerShipGameEntity>(*_renderer, _camera, *_inputHandler);
-	_scene->InsertEntity(_ship);
-
-	auto dirLight = std::make_shared<DirectionalLight>();
-	dirLight->_ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
-	dirLight->_diffuse = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
-	dirLight->_specular = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
-	dirLight->_direction = XMFLOAT3(0.0f, 1.0f, -1.0f);
-
-	_scene->InsertDirectionalLight(dirLight);
+	_ship = std::make_shared<PlayerShipGameEntity>(*_scene, *_renderer, _camera, *_inputHandler);
+	_scene->InsertEntity(_ship); 	
 
 	auto dirLight2 = std::make_shared<DirectionalLight>();
-	dirLight2->_ambient =  XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
-	dirLight2->_diffuse = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
-	dirLight2->_specular = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
-	dirLight2->_direction = XMFLOAT3(0.0f, 2.0f, 0.0f);
+	dirLight2->_ambient =  XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	dirLight2->_diffuse = XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f);
+	dirLight2->_specular = XMFLOAT4(0.9f, 0.9f, 0.9f, 1.0f);
+	dirLight2->_direction = XMFLOAT3(0.0f, -1.0f, 0.0f);
 
 	_scene->InsertDirectionalLight(dirLight2);
-
-	auto pointLight = std::make_shared<PointLight>();
-	pointLight->_ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
-	pointLight->_diffuse = XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f);
-	pointLight->_specular = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-	pointLight->_att = XMFLOAT3(0.0f, 0.0f, 0.1f);
-	pointLight->_position = XMFLOAT3(-20.0f, 0.0f, -20.0f);
-	pointLight->_range = 8.0f;
-
-	_scene->InsertPointLight(pointLight);
 }
 
 Game::~Game()

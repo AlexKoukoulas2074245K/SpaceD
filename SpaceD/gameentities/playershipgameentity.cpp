@@ -7,18 +7,25 @@
 
 // Local Headers
 #include "playershipgameentity.h"
+#include "projectilegameentity.h"
 #include "../camera.h"
 #include "../inputhandler.h"
+#include "../scene.h"
 #include "../rendering/models/model.h"
 
 // Remote Headers
 
-PlayerShipGameEntity::PlayerShipGameEntity(Renderer& renderer, const Camera& camera, const InputHandler& inputHandler)
-	: ShipGameEntity("ship_dps", renderer)
+
+// Constants
+static const UINT PROJECTILE_SPAWN_TIMER = 10;
+
+PlayerShipGameEntity::PlayerShipGameEntity(Scene& scene, Renderer& renderer, const Camera& camera, const InputHandler& inputHandler)
+	: ShipGameEntity("ship_dps", scene, renderer)
 	, _camera(camera)
 	, _inputHandler(inputHandler)
 	, _animState(AnimationState::IDLE)
 	, _animTargetRotAngle(0.0f)
+	, _projectileSpawnTimer(PROJECTILE_SPAWN_TIMER)
 {
 }
 
@@ -28,6 +35,7 @@ PlayerShipGameEntity::~PlayerShipGameEntity()
 
 void PlayerShipGameEntity::Update(const FLOAT deltaTime)
 {
+	// Calculate velocity and position
 	auto viewProj = _camera.GetViewMatrix() * _camera.GetProjectionMatrix();
 
 	const XMFLOAT4 trans4(GetTranslation().x, GetTranslation().y, GetTranslation().z, 1.0f);
@@ -36,7 +44,7 @@ void PlayerShipGameEntity::Update(const FLOAT deltaTime)
 	transVec *= 2;
 
 	const auto ndcCoords = _inputHandler.GetMouseNDCCoords();
-	const auto nDiff = math::absf(ndcCoords.x, XMVectorGetX(transVec));
+	const auto nDiff = math::Absf(ndcCoords.x, XMVectorGetX(transVec));
 
 	if (nDiff < 0.0005f)
 	{
@@ -51,7 +59,7 @@ void PlayerShipGameEntity::Update(const FLOAT deltaTime)
 		_velocity.x = 200 * deltaTime * nDiff;
 	}
 
-	const auto nDiffY = math::absf(ndcCoords.y, XMVectorGetY(transVec));
+	const auto nDiffY = math::Absf(ndcCoords.y, XMVectorGetY(transVec));
 
 	if (nDiffY < 0.0005f)
 	{
@@ -66,31 +74,32 @@ void PlayerShipGameEntity::Update(const FLOAT deltaTime)
 		_velocity.z = -200 * deltaTime * nDiffY;
 	}
 
+	// Spawn projectiles
+	if (_inputHandler.IsButtonDown(InputHandler::Button::LMBUTTON))
+	{
+		_projectileSpawnTimer--;
+
+		if (_projectileSpawnTimer == 0)
+		{
+			_scene.InsertEntity(std::make_shared<ProjectileGameEntity>("projectile_dps_basic", 0, XMFLOAT3(GetTranslation().x, GetTranslation().y, GetTranslation().z - GetDimensions()._depth/1.4f), _scene, _renderer));
+			_projectileSpawnTimer = static_cast<UINT>(PROJECTILE_SPAWN_TIMER);
+		}
+	}
+
+	// Animate
 	switch (_animState)
 	{
-		case IDLE:
-		{
-			if (_velocity.x > 0.3f)
-			{
-				_animState = AnimationState::ROT_LEFT;
-				_animTargetRotAngle = GetRotation().z - math::PI;
-			}
-			else if (_velocity.x < -0.3f)
-			{
-				_animState = AnimationState::ROT_RIGHT;
-				_animTargetRotAngle = GetRotation().z + math::PI;
-			}
-		} break;
+	    case IDLE: break;
 		case ROT_LEFT:
 		{
-			if (math::lerp(GetRotation().z, _animTargetRotAngle, 6 * deltaTime, _model->GetTransform()._rotation.z))
+			if (math::Lerp(GetRotation().z, _animTargetRotAngle, 6 * deltaTime, _model->GetTransform()._rotation.z))
 			{
 				_animState = AnimationState::IDLE;
 			}
 		} break;
 		case ROT_RIGHT:
 		{
-			if (math::lerp(GetRotation().z, _animTargetRotAngle, 6 * deltaTime, _model->GetTransform()._rotation.z))
+			if (math::Lerp(GetRotation().z, _animTargetRotAngle, 6 * deltaTime, _model->GetTransform()._rotation.z))
 			{
 				_animState = AnimationState::IDLE;
 			}

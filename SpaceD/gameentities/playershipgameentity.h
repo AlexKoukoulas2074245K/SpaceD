@@ -15,7 +15,7 @@ class InputHandler;
 class PlayerShipGameEntity final: public ShipGameEntity 
 {
 public:
-	PlayerShipGameEntity(Renderer& renderer, const Camera& camera, const InputHandler& inputHandler);
+	PlayerShipGameEntity(Scene& scene, Renderer& renderer, const Camera& camera, const InputHandler& inputHandler);
 	~PlayerShipGameEntity();
 
 	void Update(const FLOAT deltaTime) override;
@@ -29,7 +29,7 @@ private:
 private:
 	AnimationState _animState;
     FLOAT _animTargetRotAngle;
-
+	UINT _projectileSpawnTimer;
 	const Camera& _camera;
 	const InputHandler& _inputHandler;
 };

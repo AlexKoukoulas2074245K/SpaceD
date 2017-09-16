@@ -6,10 +6,12 @@
 cbuffer cbPerObject
 {
 	float4x4 gWorld;
-	float4   gColor;
+    float4   gColor;	
 	int      gColorEnabled;
-	float3   gPadding;
+	int      gScrollTexCoordsEnabled;
+	float2   gTexCoordOffsets;	
 }; 
+
 
 struct VertexIn
 {
@@ -34,6 +36,12 @@ VertexOut VS(VertexIn vin)
 	vout.NormalW = vin.NormalL;	
 	vout.PosH     = float4(vout.PosW, 1.0f);
 	vout.texcoord = vin.TexcoordL;
+	
+	if (gScrollTexCoordsEnabled)
+	{
+	    vout.texcoord.x += gTexCoordOffsets.x;
+		vout.texcoord.y += gTexCoordOffsets.y;
+	}
 
 	return vout;
 }

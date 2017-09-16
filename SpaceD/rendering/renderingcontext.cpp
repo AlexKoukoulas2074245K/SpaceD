@@ -97,6 +97,11 @@ void RenderingContext::SetWireframe(const bool wireframe)
 	_deviceContext->RSSetState(wireframe ? _wireframeRastState.Get(): _defaultRastState.Get());
 }
 
+void RenderingContext::SetDepthStencilEnabled(const bool depthStencilEnabled)
+{
+	_deviceContext->OMSetDepthStencilState(depthStencilEnabled ? _depthStencilEnabledState.Get() : _depthStencilDisabledState.Get(), 1);
+}
+
 void RenderingContext::InitD3D()
 {
 	UINT deviceFlags = 0;
@@ -223,9 +228,9 @@ void RenderingContext::InitD3D()
 
 	// Create and set custom Sampler State
 	D3D11_SAMPLER_DESC samplerDesc = {};
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 
 	samplerDesc.BorderColor[0] = 0.0f;
 	samplerDesc.BorderColor[1] = 0.0f;
@@ -241,6 +246,31 @@ void RenderingContext::InitD3D()
 	// Create and set the sampler
 	HR(_device->CreateSamplerState(&samplerDesc, &_samplerState));
 	_deviceContext->PSSetSamplers(0, 1, _samplerState.GetAddressOf());
+
+	D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {};
+	depthStencilDesc.DepthEnable = true;
+	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	depthStencilDesc.StencilEnable = true;
+	depthStencilDesc.StencilReadMask = 0xFF;
+	depthStencilDesc.StencilWriteMask = 0xFF;
+
+	depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+	depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+	depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+	HR(_device->CreateDepthStencilState(&depthStencilDesc, &_depthStencilEnabledState));
+	depthStencilDesc.DepthEnable = false;
+
+	HR(_device->CreateDepthStencilState(&depthStencilDesc, &_depthStencilDisabledState));
+
+	_deviceContext->OMSetDepthStencilState(_depthStencilEnabledState.Get(), 1);
+
 
 	// Define and create the rasterizer states
 	D3D11_RASTERIZER_DESC rd;

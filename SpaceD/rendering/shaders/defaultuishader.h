@@ -20,8 +20,9 @@ public:
 	{
 		XMMATRIX gWorld;
 		XMFLOAT4 gColor;
-		INT      gColorEnabled;
-		XMFLOAT3 gPadding;
+		INT      gColorEnabled;		
+		INT      gSrollTexCoordsEnabled;
+		XMFLOAT2 gTexCoordOffsets;
 	};
 
 public:

@@ -48,5 +48,5 @@ private:
 	OBJLoader& operator = (const OBJLoader& rhs) = delete;
 
 private:	
-	std::unordered_map<std::string, std::weak_ptr<ModelData>> _objModelData;
+	std::unordered_map<std::string, std::shared_ptr<ModelData>> _objModelData;
 };

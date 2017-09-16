@@ -10,6 +10,7 @@
 // Remote Headers
 #include <Windows.h>
 #include <xnamath.h>
+#include <vector>
 
 typedef float FLOAT;
 
@@ -126,7 +127,7 @@ namespace math
 		return XMMatrixTranspose(XMMatrixInverse(&det, A));
 	}
 
-	static bool lerp(const FLOAT current, const FLOAT target, const FLOAT dt, FLOAT& outResult)
+	static bool Lerp(const FLOAT current, const FLOAT target, const FLOAT dt, FLOAT& outResult)
 	{
 		float fdiff = target - current;
 		if (fdiff > dt) 
@@ -146,20 +147,33 @@ namespace math
 		}
 	}
 
-	static float absf(const FLOAT a, const FLOAT b)
+	static FLOAT Absf(const FLOAT a, const FLOAT b)
 	{
 		const auto dff = a - b;
 		if (dff > 0) return dff;
 		return -dff;
 	}
 
-	static float max2f(const FLOAT a, const FLOAT b)
+	static FLOAT Max2f(const FLOAT a, const FLOAT b)
 	{
 		return a > b ? a : b;
 	}
 
-	static float max3f(const FLOAT a, const FLOAT b, const FLOAT c)
+	static FLOAT Max3f(const FLOAT a, const FLOAT b, const FLOAT c)
 	{
-		return max2f(a, max2f(b, c));
+		return Max2f(a, Max2f(b, c));
+	}	
+
+	static bool NonZeroTexCoords(const std::vector<XMFLOAT2>& texcoordVec)
+	{
+		for (const auto& texcoord: texcoordVec)
+		{
+			if (texcoord.x != 0.0f || texcoord.y != 0.0f)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

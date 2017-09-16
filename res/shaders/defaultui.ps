@@ -11,7 +11,8 @@ cbuffer cbPerObject
 	float4x4 gWorld;
     float4   gColor;	
 	int      gColorEnabled;
-	float3   gPadding;
+	int      gScrollTexCoordsEnabled;
+	float2   gTexCoordOffsets;	
 }; 
 
 struct VertexOut
@@ -23,7 +24,7 @@ struct VertexOut
 };
 
 float4 PS(VertexOut pin) : SV_Target
-{		
+{   
 	float4 sampledColor = resource.Sample(ss, pin.texcoord);
 	if (sampledColor.a < 0.8f || !gColorEnabled) return sampledColor;
 	return sampledColor + gColor;

@@ -46,7 +46,7 @@ private:
 	std::unique_ptr<Renderer> _renderer;		
 	std::unique_ptr<Scene> _scene;
 	std::unique_ptr<DebugPrompt> _debugPrompt;
-	std::shared_ptr<GameEntity> _ship;
+	std::shared_ptr<GameEntity> _ship;	
 
 	// Stack allocated to avoid matrix misalignments
 	Camera _camera;

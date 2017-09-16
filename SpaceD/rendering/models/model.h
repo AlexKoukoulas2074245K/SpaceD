@@ -39,6 +39,7 @@ public:
 	const math::Dimensions& GetDimensions() const;
 	const FLOAT GetBiggestDimensionRad() const;
 	const Material& GetMaterial() const;
+	Material& GetMaterial();
 
 	UINT GetIndexCount() const; 
 	

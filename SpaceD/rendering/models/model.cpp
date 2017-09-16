@@ -61,10 +61,15 @@ const math::Dimensions& Model::GetDimensions() const
 
 const FLOAT Model::GetBiggestDimensionRad() const
 {
-	return math::max3f(_dimensions._width, _dimensions._height, _dimensions._depth) / 2.0f;
+	return math::Max3f(_dimensions._width, _dimensions._height, _dimensions._depth) / 2.0f;
 }
 
 const Material& Model::GetMaterial() const
+{
+	return _material;
+}
+
+Material& Model::GetMaterial()
 {
 	return _material;
 }

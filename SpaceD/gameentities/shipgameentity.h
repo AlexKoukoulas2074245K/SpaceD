@@ -13,7 +13,7 @@
 class ShipGameEntity: public GameEntity
 {
 public:
-	ShipGameEntity(const std::string& shipName, Renderer& renderer);
+	ShipGameEntity(const std::string& shipName, Scene& scene, Renderer& renderer);
 	virtual ~ShipGameEntity();
 
 	virtual void Update(const FLOAT deltaTime);

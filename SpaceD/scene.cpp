@@ -16,6 +16,7 @@
 #include "rendering/shaders/shader.h"
 #include "rendering/shaders/default3dshader.h"
 #include "rendering/shaders/default3dwithlightingshader.h"
+#include "rendering/shaders/defaultuishader.h"
 
 // Remote Headers
 #include <unordered_map>
@@ -27,6 +28,7 @@ Scene::Scene(Renderer& renderer, Camera& camera, const InputHandler& inputHandle
 	, _camera(camera)
 	, _inputHandler(inputHandler)
 	, _window(clientWindow)
+	, _backgroundOffset(0.0f, 0.0f)
 {
 	ConstructScene();
 	_sceneCellModel = std::make_unique<Model>("debug_scene_cell");
@@ -34,6 +36,10 @@ Scene::Scene(Renderer& renderer, Camera& camera, const InputHandler& inputHandle
 
 	_defaultCellTexture = TextureLoader::Get().LoadTexture("../res/models/debug_scene_cell/debug_scene_cell.png", _renderer.GetDevice());
 	_activatedCellTexture = TextureLoader::Get().LoadTexture("../res/models/debug_scene_cell/debug_scene_cell_activated.png", _renderer.GetDevice());
+
+	_background = std::make_unique<Model>("background_space");
+	_background->LoadModelComponents(_renderer.GetDevice());
+
 }
 
 Scene::~Scene()
@@ -149,6 +155,7 @@ void Scene::Update(const FLOAT deltaTime)
 {	
 	UpdateCamera(deltaTime);
 	UpdateEntities(deltaTime);
+	UpdateBackground(deltaTime);
 }
 
 void Scene::Render()
@@ -176,7 +183,7 @@ void Scene::ConstructScene()
 }
 
 void Scene::UpdateCamera(const FLOAT deltaTime)
-{
+{		
 	if (_inputHandler.IsKeyDown(InputHandler::LEFT)) _camera.RotateCamera(Camera::LEFT, deltaTime * 4);
 	if (_inputHandler.IsKeyDown(InputHandler::RIGHT)) _camera.RotateCamera(Camera::RIGHT, deltaTime * 4);
 	if (_inputHandler.IsKeyDown(InputHandler::UP)) _camera.RotateCamera(Camera::UP, deltaTime * 4);
@@ -198,7 +205,7 @@ void Scene::UpdateEntities(const FLOAT deltaTime)
 
 	// Update out of bounds objects and add them to the transit list
 	// if they cross the scene graph's bounds
-	const auto outOfBoundsCount = _outOfBoundsObjects.size();
+	auto outOfBoundsCount = _outOfBoundsObjects.size();
 	for (auto i = 0U; i < outOfBoundsCount; ++i)
 	{
 		auto& entity = _outOfBoundsObjects[i];
@@ -208,6 +215,7 @@ void Scene::UpdateEntities(const FLOAT deltaTime)
 		{
 			const auto cellCoords = GetCellCoords(*entity);
 			_outOfBoundsObjects.erase(_outOfBoundsObjects.begin() + i);
+			outOfBoundsCount--;
 			residentsToBeAdded[cellCoords._row * CELL_ROWS + cellCoords._col] = entity;
 		}
 	}
@@ -218,17 +226,25 @@ void Scene::UpdateEntities(const FLOAT deltaTime)
 	{
 		for (auto x = 0U; x < CELL_COLS; ++x)
 		{
-			const auto residentCount = _sceneGraph[y][x]._residents.size();
+			auto residentCount = _sceneGraph[y][x]._residents.size();
 			for (auto i = 0U; i < residentCount; ++i)
 			{
 				auto& cell = _sceneGraph[y][x];
-				auto& entity = cell._residents[i];
+				auto entity = cell._residents[i];
 				entity->Update(deltaTime);
+
+				// Recalculate resident count due to possible entity spawns from previous entity update
+				residentCount = _sceneGraph[y][x]._residents.size();
 
 				if (IsOutOfBounds(*entity))
 				{
-					_outOfBoundsObjects.push_back(entity);
+					if (!entity->ShouldBeDestroyWhenOutOfBounds())
+					{
+						_outOfBoundsObjects.push_back(entity);
+					}
+					
 					cell._residents.erase(cell._residents.begin() + i);
+					residentCount--;
 					continue;
 				}
 
@@ -238,6 +254,7 @@ void Scene::UpdateEntities(const FLOAT deltaTime)
 				{
 					residentsToBeAdded[cellCoords._row * CELL_ROWS + cellCoords._col] = entity;
 					cell._residents.erase(cell._residents.begin() + i);
+					residentCount--;
 				}
 			}
 		}
@@ -250,6 +267,11 @@ void Scene::UpdateEntities(const FLOAT deltaTime)
 	}
 
 	residentsToBeAdded.clear();
+}
+
+void Scene::UpdateBackground(const FLOAT deltaTime)
+{
+	_backgroundOffset.y -= 0.005f * deltaTime;
 }
 
 void Scene::DebugRenderScene()
@@ -299,13 +321,28 @@ void Scene::DebugRenderLights()
 
 void Scene::RenderEntities()
 {
+	_renderer.SetDepthStencilEnabled(false);
+	_renderer.SetShader(Shader::ShaderType::DEFAULT_UI);
+
+	DefaultUiShader::ConstantBuffer bkgCb;
+	bkgCb.gColorEnabled = false;
+	bkgCb.gWorld = _background->CalculateWorldMatrix();
+	bkgCb.gSrollTexCoordsEnabled = true;
+	bkgCb.gTexCoordOffsets = XMFLOAT2(_backgroundOffset.x, _backgroundOffset.y);
+
+	_renderer.RenderModel(*_background, &bkgCb);
+
+	_renderer.SetDepthStencilEnabled(true);
 	_renderer.SetShader(Shader::ShaderType::DEFAULT_3D_WITH_LIGHTING);
 
 	// Accumulate Lights
 	Default3dWithLightingShader::ConstantBuffer cb = {};
 
-	const auto directionalLightCount = _directionalLights.size();
-	const auto pointLightCount = _pointLights.size();
+	const auto directionalLightCount = _directionalLights.size() > Default3dWithLightingShader::MAX_DIRECTIONAL_LIGHTS ? 
+		                               Default3dWithLightingShader::MAX_DIRECTIONAL_LIGHTS : _directionalLights.size();
+
+	const auto pointLightCount = _pointLights.size() > Default3dWithLightingShader::MAX_POINT_LIGHTS ? 
+		                         Default3dWithLightingShader::MAX_POINT_LIGHTS : _pointLights.size();
 
 	for (auto i = 0U; i < directionalLightCount; ++i)
 	{

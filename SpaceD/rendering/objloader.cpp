@@ -46,17 +46,10 @@ std::shared_ptr<OBJLoader::ModelData> OBJLoader::LoadOBJData(const std::string& 
 std::shared_ptr<OBJLoader::ModelData> OBJLoader::LoadOBJData(const std::string& modelDataPath, const std::vector<XMFLOAT2> customTexcoords)
 {
 	// Model entry exists
-	if (_objModelData.count(modelDataPath))
-	{
-		// Model's weak pointer has not expired
-		if (auto sharedModelData = _objModelData[modelDataPath].lock())
-		{
-			// Model found; return cached version
-			return sharedModelData;
-		}
-
-		// Model's weak pointer has expired, so entry needs to be erased
-		_objModelData.erase(modelDataPath);
+	if (_objModelData.count(modelDataPath) && !math::NonZeroTexCoords(customTexcoords))
+	{		
+		// Model found; return cached version		
+		return _objModelData[modelDataPath];		
 	}
 
 	// Load OBJ data normally
@@ -93,6 +86,7 @@ std::shared_ptr<OBJLoader::ModelData> OBJLoader::LoadOBJData(const std::string& 
 	mat._ambient  = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	mat._diffuse  = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	mat._specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	mat._reflect  = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	std::string line;
 	while (std::getline(fileStream, line))
@@ -201,7 +195,7 @@ std::shared_ptr<OBJLoader::ModelData> OBJLoader::LoadOBJData(const std::string& 
 	}
 
 	// Calculate model dimensions
-	math::Dimensions dimensions(math::absf(maxX, minX), math::absf(maxY, minY), math::absf(maxZ, minZ));
+	math::Dimensions dimensions(math::Absf(maxX, minX), math::Absf(maxY, minY), math::Absf(maxZ, minZ));
 
 	// Can't use make shared with private constructors (even if OBJLoader is Model's friend)
 	auto loadedModelData = std::make_shared<OBJLoader::ModelData>(finalVertexData, finalIndexData, dimensions, mat);

@@ -7,6 +7,7 @@
 
 // Local Headers
 #include "../util/math.h"
+#include "../rendering/lightdef.h"
 
 // Remote Headers
 #include <string>
@@ -17,12 +18,14 @@
 class Model;
 class DebugPrompt;
 class Renderer;
+class Scene;
 
 class GameEntity
 {
 	friend class DebugPrompt;
+	
 public:
-	GameEntity(const std::string& modelName, Renderer& renderer);
+	GameEntity(const std::string& modelName, Scene& scene, Renderer& renderer);
 	virtual ~GameEntity();
 
 	virtual void Update(const FLOAT deltaTime);
@@ -36,11 +39,17 @@ public:
 	const XMFLOAT3& GetTranslation() const;
 	const XMFLOAT3& GetScale() const;
 	const XMFLOAT3& GetRotation() const;
+	const Material& GetMaterial() const;
+
+	bool ShouldBeDestroyWhenOutOfBounds() const;
 
 private:
-	void LoadModel(const std::string& modelName, Renderer& renderer);
+	void LoadModel(const std::string& modelName);
 
 protected:
-	std::unique_ptr<Model> _model;		
+	Scene& _scene;
+	Renderer& _renderer;
+	std::unique_ptr<Model> _model;	
+	bool _shouldBeDestroyedWhenOutOfBounds;
 
 };

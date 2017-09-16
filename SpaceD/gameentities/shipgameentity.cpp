@@ -13,8 +13,8 @@
 
 // Remote Headers
 
-ShipGameEntity::ShipGameEntity(const std::string& shipName, Renderer& renderer)
-	: GameEntity(shipName, renderer)
+ShipGameEntity::ShipGameEntity(const std::string& shipName, Scene& scene, Renderer& renderer)
+	: GameEntity(shipName, scene, renderer)
 	, _velocity(0.0f, 0.0f, 0.0f)	
 {
 }

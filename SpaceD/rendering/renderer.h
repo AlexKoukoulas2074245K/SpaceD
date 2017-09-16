@@ -38,6 +38,8 @@ public:
 	void RenderPointLight(const XMFLOAT3& pos, const FLOAT range, const XMMATRIX& viewMatrix, const XMMATRIX& projMatrix);
 	void RenderModel(const Model& model, const void* constantBufferData);
 
+	void SetDepthStencilEnabled(const bool depthStencilEnabled);
+
 	comptr<ID3D11Device> GetDevice() const;
 	comptr<ID3D11DeviceContext> GetDeviceContext() const;
 
