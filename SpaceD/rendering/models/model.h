@@ -38,6 +38,9 @@ public:
 
 	const math::Dimensions& GetDimensions() const;
 	const FLOAT GetBiggestDimensionRad() const;
+	const FLOAT GetAverageDimensionRad() const;
+	const bool CollidesWith(const Model& model) const;
+
 	const Material& GetMaterial() const;
 	Material& GetMaterial();
 

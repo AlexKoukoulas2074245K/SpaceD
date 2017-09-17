@@ -78,13 +78,13 @@
     <ClCompile Include="util\debug\debugprompt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gameentities\shipgameentity.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="gameentities\playershipgameentity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="gameentities\projectilegameentity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gameentities\trainingbotgameentity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -161,13 +161,13 @@
     <ClInclude Include="util\debug\debugprompt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="gameentities\shipgameentity.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="gameentities\playershipgameentity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="gameentities\projectilegameentity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gameentities\trainingbotgameentity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -38,6 +38,7 @@ public:
 	std::shared_ptr<PointLight> GetPointLightByIndex(const UINT pointLightIndex) const;
 	std::shared_ptr<DirectionalLight> GetDirectionalLightByIndex(const UINT directionalLightIndex) const;
 
+	void RemoveEntity(std::shared_ptr<GameEntity> gameEntity);
 	void RemoveEntityByIndex(const UINT entityIndex);
 	void RemovePointLightByIndex(const UINT pointLightIndex);
 	void RemoveDirectionalLightByIndex(const UINT dirLightIndex);
@@ -93,7 +94,7 @@ private:
 	void DebugRenderScene();
 	void DebugRenderLights();
 	void RenderEntities();
-
+public:
 	bool IsOutOfBounds(const GameEntity& entity) const;
 	CellCoords GetCellCoords(const GameEntity& entity) const;
 

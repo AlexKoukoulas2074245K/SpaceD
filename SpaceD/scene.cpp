@@ -114,6 +114,25 @@ std::shared_ptr<DirectionalLight> Scene::GetDirectionalLightByIndex(const UINT d
 	return nullptr;
 }
 
+void Scene::RemoveEntity(std::shared_ptr<GameEntity> gameEntity)
+{
+	for (auto y = 0U; y < CELL_ROWS; ++y)
+	{
+		for (auto x = 0U; x < CELL_COLS; ++x)
+		{
+			const auto residentCount = _sceneGraph[y][x]._residents.size();
+			for (auto i = 0U; i < residentCount; ++i)
+			{	
+				if (_sceneGraph[y][x]._residents[i] == gameEntity)
+				{
+					_sceneGraph[y][x]._residents.erase(_sceneGraph[y][x]._residents.begin() + i);
+					return;
+				}
+			}
+		}
+	}
+}
+
 void Scene::RemoveEntityByIndex(const UINT entityIndex)
 {
 	auto indexCounter = 0;
@@ -200,8 +219,14 @@ void Scene::UpdateCamera(const FLOAT deltaTime)
 
 void Scene::UpdateEntities(const FLOAT deltaTime)
 {
+	struct EntityAndLocation
+	{
+		UINT loc;
+		std::shared_ptr<GameEntity> entity;
+	};
+
 	// Transit objects ready to be inserted into the actual scene graph
-	std::unordered_map<UINT, std::shared_ptr<GameEntity>> residentsToBeAdded;
+	std::vector<EntityAndLocation> residentsToBeAdded;
 
 	// Update out of bounds objects and add them to the transit list
 	// if they cross the scene graph's bounds
@@ -209,14 +234,14 @@ void Scene::UpdateEntities(const FLOAT deltaTime)
 	for (auto i = 0U; i < outOfBoundsCount; ++i)
 	{
 		auto& entity = _outOfBoundsObjects[i];
-		entity->Update(deltaTime);
+		entity->Update(deltaTime, std::vector<std::shared_ptr<GameEntity>>());
 
 		if (!IsOutOfBounds(*entity))
 		{
 			const auto cellCoords = GetCellCoords(*entity);
 			_outOfBoundsObjects.erase(_outOfBoundsObjects.begin() + i);
 			outOfBoundsCount--;
-			residentsToBeAdded[cellCoords._row * CELL_ROWS + cellCoords._col] = entity;
+			residentsToBeAdded.push_back({cellCoords._row * CELL_ROWS + cellCoords._col, entity});
 		}
 	}
 
@@ -231,7 +256,53 @@ void Scene::UpdateEntities(const FLOAT deltaTime)
 			{
 				auto& cell = _sceneGraph[y][x];
 				auto entity = cell._residents[i];
-				entity->Update(deltaTime);
+
+				// Create neighbour entity vector
+				std::vector<std::shared_ptr<GameEntity>> nearbyEntities;
+				nearbyEntities.insert(nearbyEntities.end(), cell._residents.begin(), cell._residents.end());
+
+				// Remove this entity from the vector
+				nearbyEntities.erase(nearbyEntities.begin() + i);
+
+				const bool hasSquareLeft  = x > 0;
+				const bool hasSquareRight = x < CELL_COLS - 1;
+				const bool hasSquareUp    = y > 0;
+				const bool hasSquareDown  = y < CELL_ROWS -1;
+				
+				if (hasSquareLeft)
+				{
+					nearbyEntities.insert(nearbyEntities.end(), _sceneGraph[y][x - 1]._residents.begin(), _sceneGraph[y][x - 1]._residents.end());
+				}
+				if (hasSquareRight)
+				{
+					nearbyEntities.insert(nearbyEntities.end(), _sceneGraph[y][x + 1]._residents.begin(), _sceneGraph[y][x + 1]._residents.end());
+				}
+				if (hasSquareUp)
+				{
+					nearbyEntities.insert(nearbyEntities.end(), _sceneGraph[y - 1][x]._residents.begin(), _sceneGraph[y - 1][x]._residents.end());
+				}
+				if (hasSquareDown)
+				{
+					nearbyEntities.insert(nearbyEntities.end(), _sceneGraph[y + 1][x]._residents.begin(), _sceneGraph[y + 1][x]._residents.end());
+				}
+				if (hasSquareLeft && hasSquareUp)
+				{
+					nearbyEntities.insert(nearbyEntities.end(), _sceneGraph[y - 1][x - 1]._residents.begin(), _sceneGraph[y - 1][x - 1]._residents.end());
+				}
+				if (hasSquareRight && hasSquareUp)
+				{
+					nearbyEntities.insert(nearbyEntities.end(), _sceneGraph[y - 1][x + 1]._residents.begin(), _sceneGraph[y - 1][x + 1]._residents.end());
+				}
+				if (hasSquareLeft && hasSquareDown)
+				{
+					nearbyEntities.insert(nearbyEntities.end(), _sceneGraph[y + 1][x - 1]._residents.begin(), _sceneGraph[y + 1][x - 1]._residents.end());
+				}
+				if (hasSquareRight && hasSquareDown)
+				{
+					nearbyEntities.insert(nearbyEntities.end(), _sceneGraph[y + 1][x + 1]._residents.begin(), _sceneGraph[y + 1][x + 1]._residents.end());
+				}
+				
+				entity->Update(deltaTime, nearbyEntities);
 
 				// Recalculate resident count due to possible entity spawns from previous entity update
 				residentCount = _sceneGraph[y][x]._residents.size();
@@ -241,7 +312,7 @@ void Scene::UpdateEntities(const FLOAT deltaTime)
 					if (!entity->ShouldBeDestroyWhenOutOfBounds())
 					{
 						_outOfBoundsObjects.push_back(entity);
-					}
+					}					
 					
 					cell._residents.erase(cell._residents.begin() + i);
 					residentCount--;
@@ -252,7 +323,7 @@ void Scene::UpdateEntities(const FLOAT deltaTime)
 
 				if (cellCoords._col != x || cellCoords._row != y)
 				{
-					residentsToBeAdded[cellCoords._row * CELL_ROWS + cellCoords._col] = entity;
+					residentsToBeAdded.push_back({cellCoords._row * CELL_ROWS + cellCoords._col, entity});
 					cell._residents.erase(cell._residents.begin() + i);
 					residentCount--;
 				}
@@ -261,9 +332,9 @@ void Scene::UpdateEntities(const FLOAT deltaTime)
 	}
 
 	// Add the residents in transit
-	for (auto mapIter = residentsToBeAdded.begin(); mapIter != residentsToBeAdded.end(); ++mapIter)
+	for (auto residentIter = residentsToBeAdded.begin(); residentIter != residentsToBeAdded.end(); ++residentIter)
 	{
-		_sceneGraph[mapIter->first / CELL_ROWS][mapIter->first % CELL_COLS]._residents.push_back(mapIter->second);
+		_sceneGraph[residentIter->loc / CELL_ROWS][residentIter->loc % CELL_COLS]._residents.push_back(residentIter->entity);
 	}
 
 	residentsToBeAdded.clear();

@@ -14,10 +14,12 @@
 // Remote Headers
 #include <sstream>
 
-GameEntity::GameEntity(const std::string& modelName, Scene& scene, Renderer& renderer)	
+GameEntity::GameEntity(const std::string& modelName, const bool isProjectile, const bool isEnemy, Scene& scene, Renderer& renderer)
 	: _scene(scene)
 	, _renderer(renderer)
 	, _shouldBeDestroyedWhenOutOfBounds(false)
+	, _isProjectile(isProjectile)
+	, _isEnemy(isEnemy)
 {
 	LoadModel(modelName);
 }
@@ -26,7 +28,7 @@ GameEntity::~GameEntity()
 {
 }
 
-void GameEntity::Update(const FLOAT deltaTime)
+void GameEntity::Update(const FLOAT deltaTime, const std::vector<std::shared_ptr<GameEntity>>& nearbyEntities)
 {
 	
 }
@@ -117,6 +119,16 @@ const Material& GameEntity::GetMaterial() const
 bool GameEntity::ShouldBeDestroyWhenOutOfBounds() const
 {
 	return _shouldBeDestroyedWhenOutOfBounds;
+}
+
+bool GameEntity::IsProjectile() const
+{
+	return _isProjectile;
+}
+
+bool GameEntity::IsEnemy() const
+{
+	return _isEnemy;
 }
 
 void GameEntity::LoadModel(const std::string& modelName)

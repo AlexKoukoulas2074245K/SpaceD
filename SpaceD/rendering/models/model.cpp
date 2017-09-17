@@ -20,8 +20,6 @@ const std::string Model::MODEL_DIRECTORY_PATH = "../res/models/";
 const std::string Model::MODEL_TEXTURE_EXT    = ".png";
 const std::string Model::MODEL_OBJDATA_EXT    = ".obj";
 
-static UINT modelCount = 0;
-
 Model::Model(const std::string& modelName)
 	: _name(modelName)
 	, _texture(0)
@@ -32,8 +30,7 @@ Model::Model(const std::string& modelName)
 
 Model::~Model()
 {
-	OutputDebugString((std::string("Deleting model: ") + _name + " model count: " + std::to_string(modelCount) + "\n").c_str()); 
-	modelCount++;
+	//OutputDebugString((std::string("Deleting model: ") + _name + " model count: " + std::to_string(modelCount) + "\n").c_str()); 
 }
 
 const XMMATRIX Model::CalculateWorldMatrix() const
@@ -62,6 +59,17 @@ const math::Dimensions& Model::GetDimensions() const
 const FLOAT Model::GetBiggestDimensionRad() const
 {
 	return math::Max3f(_dimensions._width, _dimensions._height, _dimensions._depth) / 2.0f;
+}
+
+const FLOAT Model::GetAverageDimensionRad() const
+{
+	return ((_dimensions._width + _dimensions._height + _dimensions._depth) / 3) / 2.0f;
+}
+
+const bool Model::CollidesWith(const Model& model) const
+{
+	return math::DistanceNoSqrt(GetTransform().GetTranslation(), model.GetTransform().GetTranslation()) < 
+		  (GetAverageDimensionRad() + model.GetAverageDimensionRad()) * (GetAverageDimensionRad() + model.GetAverageDimensionRad());
 }
 
 const Material& Model::GetMaterial() const

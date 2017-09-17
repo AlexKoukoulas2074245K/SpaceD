@@ -149,7 +149,7 @@
       <SubType>
       </SubType>
     </ClCompile>
-    <ClCompile Include="gameentities\shipgameentity.cpp">
+    <ClCompile Include="gameentities\trainingbotgameentity.cpp">
       <SubType>
       </SubType>
     </ClCompile>
@@ -241,7 +241,7 @@
       <SubType>
       </SubType>
     </ClInclude>
-    <ClInclude Include="gameentities\shipgameentity.h">
+    <ClInclude Include="gameentities\trainingbotgameentity.h">
       <SubType>
       </SubType>
     </ClInclude>

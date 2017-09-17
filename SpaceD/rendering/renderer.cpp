@@ -77,6 +77,9 @@ void Renderer::RenderText(const std::string& text, const XMFLOAT2& pos, const XM
 	DefaultUiShader::ConstantBuffer cb;
 	cb.gColor = color;
 	cb.gColorEnabled = 1;
+	cb.gSrollTexCoordsEnabled = 0;
+	cb.gTexCoordOffsets.x = 0.0f;
+	cb.gTexCoordOffsets.y = 0.0f;
 
 	XMFLOAT2 posCounter(pos);
 

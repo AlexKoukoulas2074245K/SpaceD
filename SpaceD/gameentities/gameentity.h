@@ -25,10 +25,10 @@ class GameEntity
 	friend class DebugPrompt;
 	
 public:
-	GameEntity(const std::string& modelName, Scene& scene, Renderer& renderer);
+	GameEntity(const std::string& modelName, const bool isProjectile, const bool isEnemy, Scene& scene, Renderer& renderer);
 	virtual ~GameEntity();
 
-	virtual void Update(const FLOAT deltaTime);
+	virtual void Update(const FLOAT deltaTime, const std::vector<std::shared_ptr<GameEntity>>& nearbyEntities);
 
 	virtual std::string GetBriefDescription() const;
 	virtual std::vector<std::string> GetDetailedDescription() const;
@@ -42,6 +42,8 @@ public:
 	const Material& GetMaterial() const;
 
 	bool ShouldBeDestroyWhenOutOfBounds() const;
+	bool IsProjectile() const;
+	bool IsEnemy() const;
 
 private:
 	void LoadModel(const std::string& modelName);
@@ -51,5 +53,6 @@ protected:
 	Renderer& _renderer;
 	std::unique_ptr<Model> _model;	
 	bool _shouldBeDestroyedWhenOutOfBounds;
-
+	bool _isProjectile;
+	bool _isEnemy;
 };

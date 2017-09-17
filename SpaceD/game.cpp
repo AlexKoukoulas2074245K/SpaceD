@@ -12,6 +12,7 @@
 #include "rendering/renderer.h"
 #include "rendering/models/model.h"
 #include "gameentities/playershipgameentity.h"
+#include "gameentities/trainingbotgameentity.h"
 #include "util/clientwindow.h"
 #include "util/gametimer.h"
 #include "util/math.h"
@@ -52,14 +53,17 @@ Game::Game(HINSTANCE hInstance, const LPCSTR clientName, const int clientWidth, 
 
 	_ship = std::make_shared<PlayerShipGameEntity>(*_scene, *_renderer, _camera, *_inputHandler);
 	_scene->InsertEntity(_ship); 	
+	
+	_scene->InsertEntity(std::make_shared<TrainingBotGameEntity>(*_scene, *_renderer, XMFLOAT3(0.0f, 0.0f, -50.0f)));
 
 	auto dirLight2 = std::make_shared<DirectionalLight>();
 	dirLight2->_ambient =  XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
 	dirLight2->_diffuse = XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f);
 	dirLight2->_specular = XMFLOAT4(0.9f, 0.9f, 0.9f, 1.0f);
-	dirLight2->_direction = XMFLOAT3(0.0f, -1.0f, 0.0f);
+	dirLight2->_direction = XMFLOAT3(0.0f, -0.8f, 0.0f);
 
 	_scene->InsertDirectionalLight(dirLight2);
+
 }
 
 Game::~Game()

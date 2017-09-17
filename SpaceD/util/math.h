@@ -164,6 +164,18 @@ namespace math
 		return Max2f(a, Max2f(b, c));
 	}	
 
+	static FLOAT DistanceNoSqrt(const XMFLOAT3 pos1, const XMFLOAT3 pos2)
+	{
+		return (pos1.x - pos2.x) * (pos1.x - pos2.x) + 
+			   (pos1.y - pos2.y) * (pos1.y - pos2.y) +
+			   (pos1.z - pos2.z) * (pos1.z - pos2.z);
+	}
+
+	static FLOAT Distance(const XMFLOAT3 pos1, const XMFLOAT3 pos2)
+	{
+		return sqrtf(DistanceNoSqrt(pos1, pos2));
+	}
+
 	static bool NonZeroTexCoords(const std::vector<XMFLOAT2>& texcoordVec)
 	{
 		for (const auto& texcoord: texcoordVec)

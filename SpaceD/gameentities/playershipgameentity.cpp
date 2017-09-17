@@ -20,12 +20,13 @@
 static const UINT PROJECTILE_SPAWN_TIMER = 10;
 
 PlayerShipGameEntity::PlayerShipGameEntity(Scene& scene, Renderer& renderer, const Camera& camera, const InputHandler& inputHandler)
-	: ShipGameEntity("ship_dps", scene, renderer)
+	: GameEntity("ship_dps", false, false, scene, renderer)
 	, _camera(camera)
 	, _inputHandler(inputHandler)
 	, _animState(AnimationState::IDLE)
 	, _animTargetRotAngle(0.0f)
 	, _projectileSpawnTimer(PROJECTILE_SPAWN_TIMER)
+	, _velocity(0.0f, 0.0f, 0.0f)
 {
 }
 
@@ -33,7 +34,7 @@ PlayerShipGameEntity::~PlayerShipGameEntity()
 {
 }
 
-void PlayerShipGameEntity::Update(const FLOAT deltaTime)
+void PlayerShipGameEntity::Update(const FLOAT deltaTime, const std::vector<std::shared_ptr<GameEntity>>& nearbyEntities)
 {
 	// Calculate velocity and position
 	auto viewProj = _camera.GetViewMatrix() * _camera.GetProjectionMatrix();
@@ -74,15 +75,25 @@ void PlayerShipGameEntity::Update(const FLOAT deltaTime)
 		_velocity.z = -200 * deltaTime * nDiffY;
 	}
 
+	for (auto nearbyEntity: nearbyEntities)
+	{
+		if (nearbyEntity->IsProjectile() && nearbyEntity->IsEnemy())
+		{
+			if (_model->CollidesWith(nearbyEntity->GetModel()))
+			{
+				// Damage calculation
+				_scene.RemoveEntity(nearbyEntity);
+			}
+		}
+	}
+
 	// Spawn projectiles
 	if (_inputHandler.IsButtonDown(InputHandler::Button::LMBUTTON))
-	{
-		_projectileSpawnTimer--;
-
-		if (_projectileSpawnTimer == 0)
+	{		
+		if (--_projectileSpawnTimer == 0)
 		{
-			_scene.InsertEntity(std::make_shared<ProjectileGameEntity>("projectile_dps_basic", 0, XMFLOAT3(GetTranslation().x, GetTranslation().y, GetTranslation().z - GetDimensions()._depth/1.4f), _scene, _renderer));
-			_projectileSpawnTimer = static_cast<UINT>(PROJECTILE_SPAWN_TIMER);
+			_scene.InsertEntity(std::make_shared<ProjectileGameEntity>("projectile_dps_basic", 0, true, XMFLOAT3(GetTranslation().x, GetTranslation().y, GetTranslation().z - GetDimensions()._depth/1.4f), _scene, _renderer));
+			_projectileSpawnTimer = PROJECTILE_SPAWN_TIMER;
 		}
 	}
 
@@ -106,5 +117,6 @@ void PlayerShipGameEntity::Update(const FLOAT deltaTime)
 		} break;
 	}	
 
-	ShipGameEntity::Update(deltaTime);
+	_model->GetTransform()._translation.x += _velocity.x;
+	_model->GetTransform()._translation.z += _velocity.z;
 }

@@ -13,15 +13,18 @@
 class ProjectileGameEntity: public GameEntity
 {
 public:
-	ProjectileGameEntity(const std::string& projectileName, const INT damage, const XMFLOAT3& pos, Scene& scene, Renderer& renderer);
+	ProjectileGameEntity(const std::string& projectileName, const INT damage, const bool fromPlayer, const XMFLOAT3& pos, Scene& scene, Renderer& renderer);
 	virtual ~ProjectileGameEntity();
 
-	virtual void Update(const FLOAT deltaTime);
+	virtual void Update(const FLOAT deltaTime, const std::vector<std::shared_ptr<GameEntity>>& nearbyEntities);
 
 	virtual std::string GetBriefDescription() const;
 	virtual std::vector<std::string> GetDetailedDescription() const;
 
+	bool SpawnedFromPlayer() const;
+
 private:
 	XMFLOAT3 _velocity;
 	INT _damage;
+	bool _fromPlayer;
 };
